@@ -53,7 +53,7 @@ const Header = () => {
                   >
                     <rect width="36" height="36" rx="6" fill="#EDE7F6" />
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       clip-rule="evenodd"
                       d="M22.67 19.1299C24.04 20.0599 25 21.3199 25 22.9999V25.9999H29V22.9999C29 20.8199 25.43 19.5299 22.67 19.1299Z"
                       fill="#5E35B1"
@@ -63,13 +63,13 @@ const Header = () => {
                       fill="#5E35B1"
                     />
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       clip-rule="evenodd"
                       d="M21 18C23.21 18 25 16.21 25 14C25 11.79 23.21 10 21 10C20.53 10 20.09 10.1 19.67 10.24C20.5 11.27 21 12.58 21 14C21 15.42 20.5 16.73 19.67 17.76C20.09 17.9 20.53 18 21 18Z"
                       fill="#5E35B1"
                     />
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       clip-rule="evenodd"
                       d="M15 19C12.33 19 7 20.34 7 23V26H23V23C23 20.34 17.67 19 15 19Z"
                       fill="#5E35B1"
@@ -106,7 +106,7 @@ const Header = () => {
                   >
                     <rect width="36" height="36" rx="6" fill="#f8f8f8" />
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       clip-rule="evenodd"
                       d="M22.67 19.1299C24.04 20.0599 25 21.3199 25 22.9999V25.9999H29V22.9999C29 20.8199 25.43 19.5299 22.67 19.1299Z"
                       fill="#1E88E5"
@@ -116,13 +116,13 @@ const Header = () => {
                       fill="#1E88E5"
                     />
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       clip-rule="evenodd"
                       d="M21 18C23.21 18 25 16.21 25 14C25 11.79 23.21 10 21 10C20.53 10 20.09 10.1 19.67 10.24C20.5 11.27 21 12.58 21 14C21 15.42 20.5 16.73 19.67 17.76C20.09 17.9 20.53 18 21 18Z"
                       fill="#1E88E5"
                     />
                     <path
-                      fill-rule="evenodd"
+                      fillRule="evenodd"
                       clip-rule="evenodd"
                       d="M15 19C12.33 19 7 20.34 7 23V26H23V23C23 20.34 17.67 19 15 19Z"
                       fill="#1E88E5"
