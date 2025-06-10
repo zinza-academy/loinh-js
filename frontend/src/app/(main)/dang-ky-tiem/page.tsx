@@ -1,14 +1,13 @@
 "use client";
-import { useState } from "react";
 import ProgressStep from "./components/ProgressStep";
 import PersonalInfoStep from "./components/PersonalInfoStep";
 import VaccinationConsentFormStep from "./components/VaccinationConsentFormStep";
 import FinishStep from "./components/FinishStep";
 import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
-import { getVaccinationRegistrationSteps } from "@/lib/utils";
+import { useStep } from "./contexts/StepContext";
 
 const RegistInjectPage = () => {
-  const [currentStep, setCurrentStep] = useState(StepNumber.PersonalInfo);
+  const { currentStep } = useStep();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -20,17 +19,12 @@ const RegistInjectPage = () => {
           </h1>
 
           {/* Progress Steps */}
-          <ProgressStep
-            currentStep={currentStep}
-            steps={getVaccinationRegistrationSteps(currentStep)}
-          />
+          <ProgressStep />
 
           {/* Step 1: Personal Information */}
-          {currentStep == StepNumber.PersonalInfo && (
-            <PersonalInfoStep onChangeStep={setCurrentStep} />
-          )}
+          {currentStep == StepNumber.PersonalInfo && <PersonalInfoStep />}
           {currentStep == StepNumber.ConsentForm && (
-            <VaccinationConsentFormStep onChangeStep={setCurrentStep} />
+            <VaccinationConsentFormStep />
           )}
           {currentStep == StepNumber.Finish && (
             <FinishStep registrationId={"8970230923847230"} />

@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useStep } from "../contexts/StepContext";
+import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
 
 interface RegistrationFormData {
   priorityGroup: string;
@@ -31,11 +33,7 @@ interface RegistrationFormData {
   desiredVaccineSession: string;
 }
 
-interface PersonalInfoStepProps {
-  onChangeStep: (step: number) => void;
-}
-
-function PersonalInfoStep({ onChangeStep }: PersonalInfoStepProps) {
+function PersonalInfoStep() {
   const form = useForm<RegistrationFormData>({
     defaultValues: {
       priorityGroup: "",
@@ -49,6 +47,8 @@ function PersonalInfoStep({ onChangeStep }: PersonalInfoStepProps) {
   });
 
   const router = useRouter();
+
+  const { setCurrentStep } = useStep();
 
   const onSubmit = (data: RegistrationFormData) => {
     console.log("Registration data:", data);
@@ -330,7 +330,7 @@ function PersonalInfoStep({ onChangeStep }: PersonalInfoStepProps) {
             <Button
               type="submit"
               className="bg-[#303F9F] hover:bg-[#303F9F]/90 px-8 h-9 rounded-[8px] rounded-bl-none"
-              onClick={() => onChangeStep(2)}
+              onClick={() => setCurrentStep(StepNumber.ConsentForm)}
             >
               <span className="font-semibold">TIẾP TỤC</span>
               <svg

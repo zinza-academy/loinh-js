@@ -1,9 +1,9 @@
-interface ProgressStepProps {
-  steps: { number: number; title: string; active: boolean }[];
-  currentStep: number;
-}
+import { getVaccinationRegistrationSteps } from "@/lib/utils";
+import { useStep } from "../contexts/StepContext";
 
-function ProgressStep({ steps, currentStep }: ProgressStepProps) {
+function ProgressStep() {
+  const { currentStep } = useStep();
+  const steps = getVaccinationRegistrationSteps(currentStep);
   return (
     <div className="flex items-center justify-center mb-8">
       {steps.map((step, index) => (

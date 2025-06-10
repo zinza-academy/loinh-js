@@ -8,16 +8,13 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
 import { useForm } from "react-hook-form";
+import { useStep } from "../contexts/StepContext";
+import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
 
-interface VaccinationConsentFormStepProps {
-  onChangeStep: (step: StepNumber) => void;
-}
 
-function VaccinationConsentFormStep({
-  onChangeStep,
-}: VaccinationConsentFormStepProps) {
+function VaccinationConsentFormStep() {
+  const { setCurrentStep } = useStep();
   interface RegistrationFormData {
     consent: boolean;
   }
@@ -96,7 +93,7 @@ function VaccinationConsentFormStep({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onChangeStep(1)}
+            onClick={() => setCurrentStep(StepNumber.PersonalInfo)}
             className="flex items-center space-x-2 h-9 rounded-[8px] rounded-br-none bg-white text-[#303F9F] hover:text-[#303F9F] hover:bg-gray-200 border-[#303F9F] "
           >
             <svg
@@ -128,7 +125,7 @@ function VaccinationConsentFormStep({
           <Button
             type="submit"
             className="bg-[#303F9F] hover:bg-[#303F9F]/90 px-8 h-9 rounded-[8px] rounded-bl-none"
-            onClick={() => onChangeStep(3)}
+            onClick={() => setCurrentStep(StepNumber.Finish)}
           >
             <span className="font-semibold">TIẾP TỤC</span>
             <svg
