@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+
 interface RegistrationFormData {
   priorityGroup: string;
   identityNumber: string;
@@ -29,6 +30,7 @@ interface RegistrationFormData {
   desiredVaccineDate: string;
   desiredVaccineSession: string;
 }
+
 function PersonalInfoStep({
   onChangeStep,
 }: {

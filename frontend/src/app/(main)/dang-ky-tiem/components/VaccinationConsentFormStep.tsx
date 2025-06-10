@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 
+interface VaccinationConsentFormStepProps {
+  onChangeStep: (step: number) => void;
+}
+
 function VaccinationConsentFormStep({
   onChangeStep,
-}: {
-  onChangeStep: (step: number) => void;
-}) {
+}: VaccinationConsentFormStepProps) {
   interface RegistrationFormData {
     consent: boolean;
   }

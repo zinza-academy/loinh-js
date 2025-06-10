@@ -4,15 +4,20 @@ import ProgressStep from "./components/ProgressStep";
 import PersonalInfoStep from "./components/PersonalInfoStep";
 import VaccinationConsentFormStep from "./components/VaccinationConsentFormStep";
 import FinishStep from "./components/FinishStep";
+import { StepNumber, StepTitle } from "@/lib/constants/vaccineRegistrationStep";
 
 const RegistInjectPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
-    { number: 1, title: "Thông tin cá nhân", active: currentStep === 1 },
-    { number: 2, title: "Phiếu đồng ý tiêm", active: currentStep === 2 },
-    { number: 3, title: "Hoàn thành", active: currentStep === 3 },
-  ];
+    StepNumber.PersonalInfo,
+    StepNumber.ConsentForm,
+    StepNumber.Finish,
+  ].map((number) => ({
+    number,
+    title: StepTitle[number],
+    active: currentStep === number,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
