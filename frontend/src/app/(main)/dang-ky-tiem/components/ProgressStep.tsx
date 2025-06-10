@@ -1,8 +1,9 @@
-interface Prop {
+interface ProgressStepProps {
   steps: { number: number; title: string; active: boolean }[];
   currentStep: number;
 }
-function ProgressStep({ steps, currentStep }: Prop) {
+
+function ProgressStep({ steps, currentStep }: ProgressStepProps) {
   return (
     <div className="flex items-center justify-center mb-8">
       {steps.map((step, index) => (

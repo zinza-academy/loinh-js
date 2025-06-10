@@ -4,20 +4,11 @@ import ProgressStep from "./components/ProgressStep";
 import PersonalInfoStep from "./components/PersonalInfoStep";
 import VaccinationConsentFormStep from "./components/VaccinationConsentFormStep";
 import FinishStep from "./components/FinishStep";
-import { StepNumber, StepTitle } from "@/lib/constants/vaccineRegistrationStep";
+import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
+import { getVaccinationRegistrationSteps } from "@/lib/utils";
 
 const RegistInjectPage = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-
-  const steps = [
-    StepNumber.PersonalInfo,
-    StepNumber.ConsentForm,
-    StepNumber.Finish,
-  ].map((number) => ({
-    number,
-    title: StepTitle[number],
-    active: currentStep === number,
-  }));
+  const [currentStep, setCurrentStep] = useState(StepNumber.PersonalInfo);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -29,16 +20,19 @@ const RegistInjectPage = () => {
           </h1>
 
           {/* Progress Steps */}
-          <ProgressStep currentStep={currentStep} steps={steps} />
+          <ProgressStep
+            currentStep={currentStep}
+            steps={getVaccinationRegistrationSteps(currentStep)}
+          />
 
           {/* Step 1: Personal Information */}
-          {currentStep == 1 && (
+          {currentStep == StepNumber.PersonalInfo && (
             <PersonalInfoStep onChangeStep={setCurrentStep} />
           )}
-          {currentStep == 2 && (
+          {currentStep == StepNumber.ConsentForm && (
             <VaccinationConsentFormStep onChangeStep={setCurrentStep} />
           )}
-          {currentStep == 3 && (
+          {currentStep == StepNumber.Finish && (
             <FinishStep registrationId={"8970230923847230"} />
           )}
         </div>

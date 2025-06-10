@@ -3,7 +3,11 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-function FinishStep({ registrationId }: { registrationId: string }) {
+interface FinishStepProp {
+  registrationId: string;
+}
+
+function FinishStep({ registrationId }: FinishStepProp) {
   const router = useRouter();
   return (
     <div className="text-center space-y-6">

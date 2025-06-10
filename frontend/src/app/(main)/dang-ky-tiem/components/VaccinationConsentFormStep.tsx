@@ -8,10 +8,11 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
 import { useForm } from "react-hook-form";
 
 interface VaccinationConsentFormStepProps {
-  onChangeStep: (step: number) => void;
+  onChangeStep: (step: StepNumber) => void;
 }
 
 function VaccinationConsentFormStep({

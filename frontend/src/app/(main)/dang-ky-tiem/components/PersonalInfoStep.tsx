@@ -31,11 +31,11 @@ interface RegistrationFormData {
   desiredVaccineSession: string;
 }
 
-function PersonalInfoStep({
-  onChangeStep,
-}: {
+interface PersonalInfoStepProps {
   onChangeStep: (step: number) => void;
-}) {
+}
+
+function PersonalInfoStep({ onChangeStep }: PersonalInfoStepProps) {
   const form = useForm<RegistrationFormData>({
     defaultValues: {
       priorityGroup: "",
