@@ -1,4 +1,5 @@
 "use client";
+
 import StatsCard from "@/components/common/StatsCard";
 import RegisUserIcon from "@/assets/svg/ic_register_people 1.svg";
 import Syringe from "@/assets/svg/ic_injection.svg";
@@ -16,7 +17,6 @@ export default function Home() {
             value="11,203,873"
             unit="lượt"
             iconSrc={RegisUserIcon}
-            // className="flex-1"
           />
           <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-[66.67%] w-px bg-gray-400 top-[16.67%] z-10"></div>
           <StatsCard
@@ -24,7 +24,6 @@ export default function Home() {
             value="1,762,119"
             unit="mũi"
             iconSrc={Syringe}
-            // className="flex-1"
           />
         </div>
 
