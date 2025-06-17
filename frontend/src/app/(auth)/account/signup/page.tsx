@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -64,6 +64,7 @@ export default function SignUpPage() {
     district: z.string().min(1, "Quận/Huyện là bắt buộc"),
     ward: z.string().min(1, "Xã/Phường là bắt buộc"),
   });
+
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,9 +80,11 @@ export default function SignUpPage() {
     },
   });
 
-  const { watch, setValue } = form;
-  const selectedProvince = watch("province");
-  const selectedDistrict = watch("district");
+  const { setValue, control } = form;
+  const [selectedProvince, selectedDistrict] = useWatch({
+    control,
+    name: ["province", "district"],
+  });
 
   // Reset district and ward when province changes
   React.useEffect(() => {
