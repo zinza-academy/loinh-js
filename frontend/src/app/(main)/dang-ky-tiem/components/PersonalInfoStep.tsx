@@ -308,7 +308,7 @@ function PersonalInfoStep() {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g clip-path="url(#clip0_6761_463)">
+                <g clipPath="url(#clip0_6761_463)">
                   <path
                     d="M20.5 11H8.33L13.92 5.41L12.5 4L4.5 12L12.5 20L13.91 18.59L8.33 13H20.5V11Z"
                     fill="#303F9F"
@@ -331,6 +331,7 @@ function PersonalInfoStep() {
               type="submit"
               className="bg-[#303F9F] hover:bg-[#303F9F]/90 px-8 h-9 rounded-[8px] rounded-bl-none"
               onClick={() => setCurrentStep(StepNumber.ConsentForm)}
+              disabled={!form.formState.isValid || !form.formState.isDirty}
             >
               <span className="font-semibold">TIẾP TỤC</span>
               <svg
@@ -340,7 +341,7 @@ function PersonalInfoStep() {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g clip-path="url(#clip0_6761_473)">
+                <g clipPath="url(#clip0_6761_473)">
                   <path
                     d="M12.5 4L11.09 5.41L16.67 11H4.5V13H16.67L11.09 18.59L12.5 20L20.5 12L12.5 4Z"
                     fill="white"

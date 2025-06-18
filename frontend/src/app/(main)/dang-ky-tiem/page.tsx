@@ -21,7 +21,6 @@ const RegistInjectPage = () => {
           {/* Progress Steps */}
           <ProgressStep />
 
-          {/* Step 1: Personal Information */}
           {currentStep == StepNumber.PersonalInfo && <PersonalInfoStep />}
           {currentStep == StepNumber.ConsentForm && (
             <VaccinationConsentFormStep />
