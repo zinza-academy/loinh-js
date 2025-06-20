@@ -2,13 +2,17 @@ import React from "react";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 
-function MainLayout({ children }: { children: React.ReactNode }) {
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div>
+    <>
       <Header />
       {children}
       <Footer />
-    </div>
+    </>
   );
 }
 
