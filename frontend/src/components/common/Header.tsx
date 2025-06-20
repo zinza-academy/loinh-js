@@ -41,7 +41,7 @@ const Header = () => {
               </HoverCardTrigger>
               <HoverCardContent align="start" className="p-3 space-y-3 w-80">
                 <Link
-                  href="/tra-cuu/chung-nhan"
+                  href="/tra-cuu?tab=certificate"
                   className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-100 transition"
                 >
                   <svg
@@ -94,7 +94,7 @@ const Header = () => {
                   </svg>
                 </Link>
                 <Link
-                  href="/tra-cuu/ket-qua"
+                  href="/tra-cuu?tab=results"
                   className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-100 transition"
                 >
                   <svg
