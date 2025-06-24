@@ -149,7 +149,7 @@ const Header = () => {
               </HoverCardContent>
             </HoverCard>
 
-            <Link href="/tai-lieu" className="hover:underline">
+            <Link href="/documents" className="hover:underline">
               Tài liệu
             </Link>
           </nav>
