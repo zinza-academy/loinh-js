@@ -1,0 +1,7 @@
+services: 
+  client:
+    build: 
+      context: ..
+      dockerfile: dev/Dockerfile
+    ports:
+      - "3000:3000"
