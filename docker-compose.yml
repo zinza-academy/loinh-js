@@ -1,0 +1,12 @@
+services:
+  client:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - /app/node_modules
+    restart: always
+    ports:
+      - "3000:3000"
