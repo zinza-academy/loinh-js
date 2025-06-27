@@ -11,18 +11,18 @@ model Province {
   id        Int        @id @default(autoincrement())
   name      String     @unique
   districts District[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
 }
 
 model District {
-  id        Int      @id @default(autoincrement())
-  name      String
-  provinceId Int
-  province  Province @relation(fields: [provinceId], references: [id])
-  wards     Ward[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String
+  provinceId Int      @map("province_id")
+  province   Province @relation(fields: [provinceId], references: [id])
+  wards      Ward[]
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@unique([name, provinceId])
 }
@@ -30,10 +30,10 @@ model District {
 model Ward {
   id         Int      @id @default(autoincrement())
   name       String
-  districtId Int
+  districtId Int      @map("district_id")
   district   District @relation(fields: [districtId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@unique([name, districtId])
 }
