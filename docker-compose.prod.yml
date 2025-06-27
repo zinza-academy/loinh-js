@@ -1,0 +1,31 @@
+services:
+  client:
+    build:
+      context: ./frontend
+      dockerfile: docker/prod.Dockerfile
+    ports:
+      - "3000:3000"
+  server:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    depends_on:
+      - db
+    env_file:
+      - path: .env
+        required: true
+    ports:
+      - "8080:8080"
+  db:
+    image: postgres:15
+    environment:
+      PGTZ: Asia/Ho_Chi_Minh
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      POSTGRES_DB: zinza-vaccine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:

@@ -1,0 +1,41 @@
+services:
+  # client:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: docker/Dockerfile
+  #   volumes:
+  #     - ./frontend/src:/app/src
+  #     - ./frontend/public:/app/public
+  #     - /app/node_modules
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  server:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/lib:/app/lib
+      - ./backend/prisma:/app/prisma
+      - ./backend/config:/app/config
+      - /app/node_modules
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+  db:
+    image: postgres:15
+    environment:
+      PGTZ: Asia/Ho_Chi_Minh
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      POSTGRES_DB: zinza-vaccine
+
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:
