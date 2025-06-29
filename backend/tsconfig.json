@@ -21,6 +21,12 @@
       "@/*": [
         "src/*"
       ],
+      "@enum/*": [
+        "lib/shared/enums/*"
+      ],
+      "@dto/*": [
+        "lib/shared/dtos/*"
+      ]
     }
   }
 }
