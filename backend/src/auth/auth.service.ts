@@ -1,37 +1,51 @@
 import { UserService } from '@/user/user.service';
-import { LoginUserDto, RegisterUserDto, } from '@dto/auth/auth.dto';
+import { LoginUserDto, RegisterUserDto } from '@dto/auth/auth.dto';
 import { UserRole } from '@enum/user.enum';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { env } from 'config/envConfig';
 import { Response } from 'express';
 import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
-import { JwtPayload, UserPayloadJwt, VerifyResetPasswordCodeDto } from 'lib/shared/types/jwt-payload.type';
+import {
+  JwtPayload,
+  UserPayloadJwt,
+  VerifyResetPasswordCodeDto,
+} from 'lib/shared/types/jwt-payload.type';
 import * as ms from 'ms';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private prisma: PrismaService,
-        private readonly userService: UserService,
-        private readonly jwtService: JwtService,
-    ){}
+  constructor(
+    private prisma: PrismaService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-private readonly saltRounds = env.auth.SALT_ROUNDS;
-    async getUserByEmail(email: string){
-        return this.prisma.identity.findUnique({where: {email}, select: {email: true, password: true, user: true}});
-    }
-
-   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.getUserByEmail(email);
-    if (user && (await this.validatePassword(pass, user.password))) {
-      const { user: userInfo, password, ...result } = user;
-      return { ...result, userId: userInfo.id };
-    }
+  private readonly saltRounds = env.auth.SALT_ROUNDS;
+  async getUserByEmail(email: string) {
+    return this.prisma.identity.findUnique({
+      where: { email },
+      select: { email: true, password: true, user: true },
+    });
   }
 
-  async login(user: UserPayloadJwt, res: Response,) {
+  async validateUser(email: string, pass: string): Promise<UserPayloadJwt> {
+    const user = await this.getUserByEmail(email);
+    if (user && (await this.validatePassword(pass, user.password))) {
+      const { user: userInfo, password, email, ...result } = user;
+      return { userId: userInfo.id };
+    }
+    throw new UnauthorizedException('Invalid email or password');
+  }
+
+  async login(user: UserPayloadJwt, res: Response) {
     const access_token = await this.generateToken(user, false);
     const refresh_token = await this.generateToken(user, true);
     res.cookie('refresh_token', refresh_token, {
@@ -80,8 +94,7 @@ private readonly saltRounds = env.auth.SALT_ROUNDS;
           token: token,
         },
       });
-      if (isInvalidToken)
-        throw new UnauthorizedException();
+      if (isInvalidToken) throw new UnauthorizedException();
       return this.jwtService.verify(token, {
         secret: isRefresh
           ? env.jwt.JWT_REFRESH_TOKEN_SECRET
@@ -93,32 +106,46 @@ private readonly saltRounds = env.auth.SALT_ROUNDS;
   }
 
   async register(registerUserDto: RegisterUserDto) {
-  const exists = await this.prisma.identity.findUnique({
-    where: { email: registerUserDto.email }
-  });
-  if (exists) {
-    throw new BadRequestException("Email already exists");
+    const IsEmailExists = await this.prisma.identity.findFirst({
+      where: {
+        email: registerUserDto.email,
+        user: {
+          identityNumber: Number(registerUserDto.identityNumber),
+        },
+      },
+    });
+
+    const identityNumberExists = await this.prisma.user.findUnique({
+      where: {
+        identityNumber: Number(registerUserDto.identityNumber),
+      },
+    });
+
+    if (IsEmailExists) {
+      throw new BadRequestException('Email already exists');
+    }
+    if (identityNumberExists) {
+      throw new BadRequestException('Identity number already exists');
+    }
+
+    // Tách email/password ra, phần còn lại dùng để tạo User
+    const { email, password, ...userData } = registerUserDto;
+    const newUser = await this.userService.create({
+      ...userData,
+    });
+
+    // Hash và tạo Identity
+    const hashedPassword = await this.getHashedPassword(password);
+    await this.prisma.identity.create({
+      data: {
+        email,
+        password: hashedPassword,
+        userId: newUser.id,
+      },
+    });
+
+    return newUser;
   }
-
-  // Tách email/password ra, phần còn lại dùng để tạo User
-  const { email, password, ...userData } = registerUserDto;
-  const newUser = await this.userService.create({
-    ...userData,
-    birthDate: ''
-  });
-
-  // Hash và tạo Identity
-  const hashedPassword = await this.getHashedPassword(password);
-  await this.prisma.identity.create({
-    data: {
-      email,
-      password: hashedPassword,
-      userId: newUser.id,
-    },
-  });
-
-  return newUser;
-}
 
   async getHashedPassword(plaintextPassword: string) {
     const salt = genSaltSync(this.saltRounds);
@@ -149,8 +176,7 @@ private readonly saltRounds = env.auth.SALT_ROUNDS;
 
   async requestPasswordReset(email: string) {
     const user = await this.getUserByEmail(email);
-    if (!user)
-      throw new NotFoundException();
+    if (!user) throw new NotFoundException();
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date();
@@ -246,19 +272,16 @@ private readonly saltRounds = env.auth.SALT_ROUNDS;
       throw new UnauthorizedException('Invalid or expired reset token');
     }
 
-    const user = await this.getUserByEmail(
-      payload.email || payload.email,
-    );
+    const user = await this.getUserByEmail(payload.email || payload.email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const hashedPassword =
-      await this.getHashedPassword(newPassword);
+    const hashedPassword = await this.getHashedPassword(newPassword);
 
     const updatePasswordMessage = 'Password updated successfully';
     await this.prisma.identity.update({
-      where: { id: user.user.id },
+      where: { userId: user.user.id },
       data: {
         password: hashedPassword,
       },
@@ -292,8 +315,8 @@ private readonly saltRounds = env.auth.SALT_ROUNDS;
   private generateToken(payload: UserPayloadJwt, isRefresh: boolean) {
     return this.jwtService.sign(
       {
-        userId: payload.id,
-        ...payload,
+        sub: payload.userId,
+        type: isRefresh ? 'refresh' : 'access',
       },
       {
         secret: isRefresh

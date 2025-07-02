@@ -11,7 +11,7 @@ model User {
     phone          String?   @unique
     avatarUrl      String?   @map("avatar_url")
 
-    identities Identity[]
+    identities Identity?
 
     wardId Int?  @map("ward_id")
     ward   Ward? @relation(fields: [wardId], references: [id])
@@ -23,16 +23,15 @@ model ResetPasswordCode {
     createdAt    DateTime  @default(now())
     expiredAt    DateTime
     userId       Int?      @map("user_id")
-    userIdentity Identity? @relation(fields: [userId], references: [id])
+    userIdentity Identity? @relation(fields: [userId], references: [userId])
 }
 
 model Identity {
     resetPasswordCode ResetPasswordCode[]
-    id                Int                 @id @default(autoincrement())
     email             String              @unique
     password          String
     refreshToken      String?             @map("refresh_token")
-    userId            Int                 @map("user_id")
+    userId            Int                 @unique @map("user_id")
     user              User                @relation(fields: [userId], references: [id])
     createdAt         DateTime            @default(now()) @map("created_at")
     updatedAt         DateTime            @updatedAt @map("updated_at")

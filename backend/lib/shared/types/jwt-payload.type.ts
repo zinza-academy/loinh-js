@@ -9,13 +9,10 @@ export type JwtPayload = {
 };
 
 export class VerifyResetPasswordCodeDto {
-    email: string;
-    code: string;
+  email: string;
+  code: string;
 }
 
 export class UserPayloadJwt {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
+  userId: number;
 }

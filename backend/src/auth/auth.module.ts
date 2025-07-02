@@ -10,7 +10,10 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  imports: [PrismaModule, UserModule,PassportModule.register({ defaultStrategy: 'oidc' }),
+  imports: [
+    PrismaModule,
+    UserModule,
+    PassportModule.register({ defaultStrategy: 'oidc' }),
     JwtModule.registerAsync({
       useFactory: async () => ({
         secret: env.jwt.JWT_ACCESS_TOKEN_SECRET,
@@ -18,9 +21,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
           expiresIn: env.jwt.JWT_ACCESS_TOKEN_EXPIRE,
         },
       }),
-    }),],
+    }),
+  ],
   controllers: [AuthController],
-  providers: [AuthService, JwtService,    LocalStrategy,
-    JwtStrategy,],
+  providers: [AuthService, JwtService, LocalStrategy, JwtStrategy],
 })
 export class AuthModule {}

@@ -1,4 +1,4 @@
-import { 
+import {
   IsString,
   IsNotEmpty,
   IsEnum,
@@ -7,7 +7,7 @@ import {
   IsInt,
   Min,
   IsDateString,
-  IsPhoneNumber
+  IsPhoneNumber,
 } from 'class-validator';
 import { UserGender } from '@enum/user.enum';
 
@@ -33,9 +33,9 @@ export class CreateUserDto {
 
   @IsDateString()
   @IsOptional()
-  birthDate: string;
+  birthDate: Date;
 
   @IsOptional()
-  @IsPhoneNumber() 
+  @IsPhoneNumber()
   phone?: string;
 }
