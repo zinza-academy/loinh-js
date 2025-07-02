@@ -19,7 +19,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { UserRole } from '@enum/user.enum';
 import { PaginationQueryDto } from '@dto/pagination-query.dto';
 
-@Controller('vaccination-site')
+@Controller('vaccination-sites')
 export class VaccinationSiteController {
   constructor(
     private readonly vaccinationSiteService: VaccinationSiteService,
