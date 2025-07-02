@@ -6,5 +6,30 @@ model VaccinationSite {
     updatedAt         DateTime @updatedAt @map("updated_at")
     createdAt         DateTime @default(now()) @map("created_at")
 
-    ward Ward? @relation(fields: [wardId], references: [id])
+    ward                    Ward?                     @relation(fields: [wardId], references: [id])
+    VaccinationRegistration VaccinationRegistration[]
+}
+
+model VaccinationRegistration {
+    id                    Int               @id @default(autoincrement())
+    healthInsuranceNumber String?           @map("health_insurance_number")
+    userId                Int               @map("user_id")
+    priorityGroup         String            @map("priority_group")
+    registrationDate      DateTime?         @map("registration_date")
+    status                String?
+    currentJob            String?           @map("current_job")
+    currentAddressId      Int?              @map("current_address_id")
+    preferredSession      PreferredSession? @default(MORNING) @map("preferred_session")
+    vaccinationSiteId     Int?              @map("vaccination_site_id")
+    createdAt             DateTime          @default(now()) @map("created_at")
+    updatedAt             DateTime          @updatedAt @map("updated_at")
+
+    user            User             @relation(fields: [userId], references: [id])
+    vaccinationSite VaccinationSite? @relation(fields: [vaccinationSiteId], references: [id])
+    currentAddress  Ward?            @relation(fields: [currentAddressId], references: [id])
+}
+
+enum PreferredSession {
+    MORNING
+    AFTERNOON
 }

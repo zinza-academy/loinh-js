@@ -6,6 +6,7 @@ import { ConsoleModule } from 'nestjs-console';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { VaccinationSiteModule } from './vaccination-site/vaccination-site.module';
+import { VaccinationRegistrationModule } from './vaccination-registration/vaccination-registration.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { VaccinationSiteModule } from './vaccination-site/vaccination-site.modul
     UserModule,
     AuthModule,
     VaccinationSiteModule,
+    VaccinationRegistrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
