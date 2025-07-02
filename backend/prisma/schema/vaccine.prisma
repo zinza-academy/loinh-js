@@ -1,0 +1,10 @@
+model VaccinationSite {
+    id                Int      @id @default(autoincrement())
+    name              String
+    headOfVaccination String   @map("head_of_vaccination")
+    wardId            Int      @map("ward_id")
+    updatedAt         DateTime @updatedAt @map("updated_at")
+    createdAt         DateTime @default(now()) @map("created_at")
+
+    ward Ward? @relation(fields: [wardId], references: [id])
+}
