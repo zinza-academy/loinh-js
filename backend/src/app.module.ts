@@ -5,9 +5,16 @@ import { LocationModule } from './location/location.module';
 import { ConsoleModule } from 'nestjs-console';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { VaccinationSiteModule } from './vaccination-site/vaccination-site.module';
 
 @Module({
-  imports: [LocationModule, ConsoleModule, UserModule, AuthModule],
+  imports: [
+    LocationModule,
+    ConsoleModule,
+    UserModule,
+    AuthModule,
+    VaccinationSiteModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
