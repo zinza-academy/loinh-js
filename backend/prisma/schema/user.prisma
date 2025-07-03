@@ -11,7 +11,8 @@ model User {
     phone          String?   @unique
     avatarUrl      String?   @map("avatar_url")
 
-    identities Identity?
+    identities              Identity?
+    vaccinationRegistration VaccinationRegistration[]
 
     wardId Int?  @map("ward_id")
     ward   Ward? @relation(fields: [wardId], references: [id])
