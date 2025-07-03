@@ -51,19 +51,19 @@ export class VaccinationRegistrationController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.vaccinationRegistrationService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.vaccinationRegistrationService.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   update(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateVaccinationRegistrationDto: UpdateVaccinationRegistrationDto,
   ) {
     return this.vaccinationRegistrationService.update(
-      +id,
+      id,
       updateVaccinationRegistrationDto,
     );
   }
@@ -71,7 +71,7 @@ export class VaccinationRegistrationController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.vaccinationRegistrationService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.vaccinationRegistrationService.remove(id);
   }
 }
