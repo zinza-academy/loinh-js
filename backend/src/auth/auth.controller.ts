@@ -15,7 +15,7 @@ import {
   RegisterUserDto,
   ResetPasswordWithTokenDto,
 } from '@dto/auth/auth.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtDecodedPayload } from 'lib/shared/decorators/jwt-layload.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -47,7 +47,7 @@ export class AuthController {
   }
 
   @Get('refresh')
-  async refresh(@Req() req) {
+  async refresh(@Req() req: Request) {
     return this.authService.refresh(req.cookies['refresh_token']);
   }
 
