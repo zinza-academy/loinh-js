@@ -1,7 +1,7 @@
 model User {
     id Int @id @default(autoincrement())
 
-    identityNumber Int?      @unique @map("identity_number")
+    identityNumber String?   @unique @map("identity_number")
     gender         Gender
     name           String
     birthDate      DateTime? @map("birth_date")

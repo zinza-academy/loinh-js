@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { env } from 'config/envConfig';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
 import {
@@ -109,15 +109,12 @@ export class AuthService {
     const IsEmailExists = await this.prisma.identity.findFirst({
       where: {
         email: registerUserDto.email,
-        user: {
-          identityNumber: Number(registerUserDto.identityNumber),
-        },
       },
     });
 
     const identityNumberExists = await this.prisma.user.findUnique({
       where: {
-        identityNumber: Number(registerUserDto.identityNumber),
+        identityNumber: registerUserDto.identityNumber,
       },
     });
 

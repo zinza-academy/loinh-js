@@ -18,8 +18,9 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from 'lib/shared/decorators/roles.decorator';
 import { UserRole } from '@enum/user.enum';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { JwtDecodedPayload } from 'lib/shared/decorators/jwt-layload.decorator';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -38,20 +39,19 @@ export class UserController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id', ParseIntPipe) id: number, @JwtDecodedPayload() user) {
+    return this.userService.findOne(+id, user);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
+    @JwtDecodedPayload() user,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.update(+id, user, updateUserDto);
   }
 
   @Delete(':id')
