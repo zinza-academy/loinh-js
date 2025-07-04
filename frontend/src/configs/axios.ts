@@ -1,6 +1,5 @@
 import axios, { AxiosError } from "axios";
 import { API_ENDPOINTS } from "./api-endpoints";
-import Cookies from "js-cookie";
 import { useAuthStore } from "@/stores/authStore";
 const api = axios.create({
   baseURL: "http://localhost:8080",
@@ -42,8 +41,6 @@ api.interceptors.response.use(
         );
         return api(originalRequest);
       } catch (refreshError) {
-        Cookies.remove("access_token");
-        Cookies.remove("refresh_token");
         useAuthStore.getState().clearUser();
         if (typeof window !== "undefined") {
           window.location.href = "/account/signin";
