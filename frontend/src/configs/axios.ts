@@ -1,8 +1,7 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { API_ENDPOINTS } from "./api-endpoints";
-import { removeAuthToken, setAuthToken } from "@/services/localStorageAsync";
 import Cookies from "js-cookie";
-
+import { useAuthStore } from "@/stores/authStore";
 const api = axios.create({
   baseURL: "http://localhost:8080",
   timeout: 1000,
@@ -12,10 +11,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
   function (config) {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
   },
   function (error) {
@@ -24,76 +19,41 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
     if (
       error.response?.status === 401 &&
-      originalRequest.url !== "/auth/refresh" &&
-      originalRequest.url !== "/auth/login" &&
-      originalRequest.url !== "/auth/logout" &&
-      originalRequest.url !== "/auth/register"
+      !originalRequest._retry &&
+      ![
+        "/auth/refresh",
+        "/auth/login",
+        "/auth/logout",
+        "/auth/register",
+      ].includes(originalRequest.url)
     ) {
-      const refreshToken = Cookies.get("refresh_token");
-      if (refreshToken) {
-        try {
-          delete originalRequest.headers["Authorization"];
+      originalRequest._retry = true;
 
-          const response = await api.post(
-            `${API_ENDPOINTS.API_BASE_URL}/auth/refresh`,
-            { refresh_token: refreshToken },
-            { withCredentials: true }
-          );
-
-          if (response.status === 200 && response.data?.data?.access_token) {
-            const { access_token, refresh_token: newRefreshToken } =
-              response.data.data;
-            setAuthToken(access_token);
-            if (newRefreshToken) {
-              Cookies.set("refresh_token", newRefreshToken, {
-                secure: true,
-                sameSite: "strict",
-              });
-            }
-
-            originalRequest.headers["Authorization"] = `Bearer ${access_token}`;
-            return axios(originalRequest);
-          } else {
-            throw new Error("Invalid refresh token response");
-          }
-        } catch (refreshError: unknown) {
-          removeAuthToken();
-          Cookies.remove("refresh_token");
-          if (typeof window !== "undefined") {
-            window.location.href = "/account/login";
-          }
-          if (
-            typeof refreshError === "object" &&
-            refreshError !== null &&
-            "response" in refreshError &&
-            typeof (refreshError as { response?: { data?: unknown } })
-              .response === "object"
-          ) {
-            return Promise.reject(
-              (refreshError as { response?: { data?: unknown } }).response
-                ?.data || refreshError
-            );
-          }
-          return Promise.reject(refreshError);
-        }
-      } else {
-        removeAuthToken();
+      try {
+        await api.post(
+          `${API_ENDPOINTS.API_BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        return api(originalRequest);
+      } catch (refreshError) {
+        Cookies.remove("access_token");
         Cookies.remove("refresh_token");
+        useAuthStore.getState().clearUser();
         if (typeof window !== "undefined") {
-          window.location.href = "/account/login";
+          window.location.href = "/account/signin";
         }
-        return Promise.reject(error.response?.data || error);
+        const axiosRefreshError = refreshError as AxiosError;
+        return Promise.reject(axiosRefreshError.response?.data || refreshError);
       }
     }
-
-    return Promise.reject(error.response?.data || error);
+    const axiosError = error as AxiosError;
+    return Promise.reject(axiosError.response?.data || error);
   }
 );
 

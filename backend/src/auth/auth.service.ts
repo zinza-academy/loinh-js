@@ -68,6 +68,12 @@ export class AuthService {
       sameSite: 'none',
       path: '/',
     });
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
     return {
       user: userData,
       access_token,
@@ -75,11 +81,23 @@ export class AuthService {
     };
   }
 
-  async refresh(token: string) {
+  async refresh(token: string, res: Response) {
     const decoded: any = await this.verifyToken(token, true);
     const { exp, iat, ...payload } = decoded;
     const access_token = await this.generateToken(payload, false);
     const refresh_token = await this.generateToken(payload, true);
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
     return {
       access_token,
       refresh_token,

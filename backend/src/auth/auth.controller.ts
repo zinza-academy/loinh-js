@@ -47,8 +47,11 @@ export class AuthController {
   }
 
   @Get('refresh')
-  async refresh(@Req() req: Request) {
-    return this.authService.refresh(req.cookies['refresh_token']);
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.refresh(req.cookies['refresh_token'], res);
   }
 
   @Post('request-password-reset-code')
