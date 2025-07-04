@@ -1,12 +1,14 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { StepNumber } from "./constants/vaccineRegistrationStep";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export const getTitleFromVaccinationRegistrationStep = (step: StepNumber): string => {
+export const getTitleFromVaccinationRegistrationStep = (
+  step: StepNumber
+): string => {
   switch (step) {
     case StepNumber.PersonalInfo:
       return "Thông tin cá nhân";
@@ -36,3 +38,11 @@ export const getVaccinationRegistrationSteps = (currentStep: StepNumber) => [
     active: currentStep === StepNumber.Finish,
   },
 ];
+
+export const getFallbackAvatar = (name: string): string => {
+  return name
+    .split(" ")
+    .map((word) => word[0].toUpperCase())
+    .join("")
+    .slice(0, 2);
+};
