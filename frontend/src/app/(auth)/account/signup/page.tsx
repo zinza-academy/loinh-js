@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useForm, useWatch } from "react-hook-form";
 import {
@@ -15,103 +15,70 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { administrativeData } from "@/lib/constants/administrativeData";
-
-interface SignUpFormValues {
-  cccd: string;
-  fullName: string;
-  email: string;
-  password: string;
-  dob: string;
-  gender: string;
-  province: string;
-  district: string;
-  ward: string;
-}
+import { SignUpFormValues } from "../types";
+import { useRegister } from "../hooks/useRegister";
+import { useGetLocation } from "@/hooks/useGetLocation";
+import { signupSchema } from "../schemas";
 
 export default function SignUpPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading } = useRegister();
+  const { data: locationData } = useGetLocation();
 
-  const formSchema = z.object({
-    cccd: z
-      .string()
-      .min(1, "Số CCCD/CMND là bắt buộc")
-      .regex(/^\d{9}$|^\d{12}$/, "Số CCCD/CMND phải có 9 hoặc 12 số"),
-    fullName: z.string().min(1, "Họ và tên là bắt buộc"),
-    email: z
-      .string()
-      .min(1, "Email là bắt buộc")
-      .email("Vui lòng nhập email hợp lệ"),
-    password: z
-      .string()
-      .min(1, "Mật khẩu là bắt buộc")
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .regex(/^\S*$/, "Mật khẩu không được chứa khoảng trắng"),
-    dob: z
-      .string()
-      .min(1, "Ngày sinh là bắt buộc")
-      .refine(
-        (value) => {
-          const today = new Date();
-          const dob = new Date(value);
-          return dob < today;
-        },
-        { message: "Ngày sinh không được là tương lai" }
-      ),
-    gender: z.string().min(1, "Giới tính là bắt buộc"),
-    province: z.string().min(1, "Tỉnh/Thành phố là bắt buộc"),
-    district: z.string().min(1, "Quận/Huyện là bắt buộc"),
-    ward: z.string().min(1, "Xã/Phường là bắt buộc"),
-  });
-
-  const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<
+    SignUpFormValues & { province: string; district: string }
+  >({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
-      cccd: "",
-      fullName: "",
+      identityNumber: "",
+      name: "",
       email: "",
       password: "",
-      dob: "",
       gender: "",
       province: "",
       district: "",
-      ward: "",
+      wardId: 0,
     },
+    mode: "onChange",
   });
 
-  const { setValue, control } = form;
+  const { setValue, control, trigger } = form;
   const [selectedProvince, selectedDistrict] = useWatch({
     control,
     name: ["province", "district"],
   });
 
-  // Reset district and ward when province changes
   React.useEffect(() => {
     if (selectedProvince) {
       setValue("district", "");
-      setValue("ward", "");
+      setValue("wardId", 0);
+      trigger(["district", "wardId"]);
     }
-  }, [selectedProvince, setValue]);
+  }, [selectedProvince, setValue, trigger]);
 
-  // Reset ward when district changes
   React.useEffect(() => {
     if (selectedDistrict) {
-      setValue("ward", "");
+      setValue("wardId", 0);
+      trigger("wardId"); // Revalidate wardId
     }
-  }, [selectedDistrict, setValue]);
+  }, [selectedDistrict, setValue, trigger]);
 
-  const onSubmit = (data: SignUpFormValues) => {
-    setIsLoading(true);
-    console.log("Đăng ký với dữ liệu:", data);
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Đăng ký thành công!");
-    }, 1000);
+  const onSubmit = async (
+    data: SignUpFormValues & { province: string; district: string }
+  ) => {
+    try {
+      const { identityNumber, name, email, password, gender, wardId } = data;
+      await register({ identityNumber, name, email, password, gender, wardId });
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
   };
 
+  React.useEffect(() => {
+    console.log("Form errors:", form.formState.errors);
+  }, [form.formState.errors]);
+
   return (
-    <div className="container flex">
+    <div className="container flex min-h-screen">
       <div className="relative flex-1">
         <Image
           src="/image/background-signin-page.png"
@@ -124,7 +91,7 @@ export default function SignUpPage() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="w-full max-w-[376px] space-y-6 mt-50"
+            className="w-full max-w-[376px] space-y-6"
           >
             <h1 className="text-[31px] font-bold">Đăng ký tài khoản</h1>
 
@@ -152,8 +119,8 @@ export default function SignUpPage() {
 
             <FormField
               control={form.control}
-              name="cccd"
-              render={({ field, fieldState }) => (
+              name="identityNumber"
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Số CCCD/CMND <p className="text-red-500 inline">(*)</p>
@@ -161,11 +128,7 @@ export default function SignUpPage() {
                   <FormControl>
                     <Input placeholder="0123456789" {...field} />
                   </FormControl>
-                  {fieldState.error && (
-                    <FormMessage className="text-red-500 text-sm">
-                      {fieldState.error?.message}
-                    </FormMessage>
-                  )}
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
@@ -173,7 +136,7 @@ export default function SignUpPage() {
             <FormField
               control={form.control}
               name="email"
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Email <p className="text-red-500 inline">(*)</p>
@@ -181,9 +144,7 @@ export default function SignUpPage() {
                   <FormControl>
                     <Input placeholder="you@example.com" {...field} />
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
@@ -191,7 +152,7 @@ export default function SignUpPage() {
             <FormField
               control={form.control}
               name="password"
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Mật khẩu <p className="text-red-500 inline">(*)</p>
@@ -199,17 +160,15 @@ export default function SignUpPage() {
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
 
             <FormField
               control={form.control}
-              name="fullName"
-              render={({ field, fieldState }) => (
+              name="name"
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Họ và tên <p className="text-red-500 inline">(*)</p>
@@ -217,27 +176,7 @@ export default function SignUpPage() {
                   <FormControl>
                     <Input placeholder="Nguyễn Văn A" {...field} />
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="dob"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>
-                    Ngày sinh <p className="text-red-500 inline">(*)</p>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
@@ -245,8 +184,7 @@ export default function SignUpPage() {
             <FormField
               control={form.control}
               name="gender"
-              rules={{ required: "Giới tính là bắt buộc" }}
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Giới tính <p className="text-red-500 inline">(*)</p>
@@ -257,14 +195,12 @@ export default function SignUpPage() {
                       className="w-full border rounded px-3 py-2"
                     >
                       <option value="">Chọn giới tính</option>
-                      <option value="male">Nam</option>
-                      <option value="female">Nữ</option>
-                      <option value="other">Khác</option>
+                      <option value="MALE">Nam</option>
+                      <option value="FEMALE">Nữ</option>
+                      <option value="OTHER">Khác</option>
                     </select>
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
@@ -272,7 +208,7 @@ export default function SignUpPage() {
             <FormField
               control={form.control}
               name="province"
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Tỉnh/Thành phố <p className="text-red-500 inline">(*)</p>
@@ -283,18 +219,19 @@ export default function SignUpPage() {
                       className="w-full border rounded px-3 py-2"
                     >
                       <option value="">Chọn tỉnh/thành</option>
-                      {Object.entries(administrativeData).map(
-                        ([id, { name }]) => (
-                          <option key={id} value={id}>
-                            {name}
+                      {locationData?.data?.map(
+                        (province: { id: number; name: string }) => (
+                          <option
+                            key={province.id}
+                            value={province.id.toString()}
+                          >
+                            {province.name}
                           </option>
                         )
                       )}
                     </select>
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
@@ -302,7 +239,7 @@ export default function SignUpPage() {
             <FormField
               control={form.control}
               name="district"
-              render={({ field, fieldState }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Quận/Huyện <p className="text-red-500 inline">(*)</p>
@@ -315,26 +252,32 @@ export default function SignUpPage() {
                     >
                       <option value="">Chọn quận/huyện</option>
                       {selectedProvince &&
-                        Object.entries(
-                          administrativeData[selectedProvince]?.districts || {}
-                        ).map(([id, { name }]) => (
-                          <option key={id} value={id}>
-                            {name}
-                          </option>
-                        ))}
+                        locationData?.data
+                          ?.find(
+                            (province: { id: number }) =>
+                              province.id === Number(selectedProvince)
+                          )
+                          ?.districts.map(
+                            (district: { id: number; name: string }) => (
+                              <option
+                                key={district.id}
+                                value={district.id.toString()}
+                              >
+                                {district.name}
+                              </option>
+                            )
+                          )}
                     </select>
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
 
             <FormField
               control={form.control}
-              name="ward"
-              render={({ field, fieldState }) => (
+              name="wardId"
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>
                     Xã/Phường <p className="text-red-500 inline">(*)</p>
@@ -344,25 +287,29 @@ export default function SignUpPage() {
                       {...field}
                       className="w-full border rounded px-3 py-2"
                       disabled={!selectedDistrict}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value || 0}
                     >
-                      <option value="">Chọn xã/phường</option>
+                      <option value={0}>Chọn xã/phường</option>
                       {selectedProvince &&
                         selectedDistrict &&
-                        administrativeData[selectedProvince]?.districts[
-                          selectedDistrict
-                        ]?.wards.map((ward) => {
-                          const [wardId, wardName] = Object.entries(ward)[0];
-                          return (
-                            <option key={wardId} value={wardId}>
-                              {wardName}
+                        locationData?.data
+                          ?.find(
+                            (province: { id: number }) =>
+                              province.id === Number(selectedProvince)
+                          )
+                          ?.districts.find(
+                            (district: { id: number }) =>
+                              district.id === Number(selectedDistrict)
+                          )
+                          ?.wards.map((ward: { id: number; name: string }) => (
+                            <option key={ward.id} value={ward.id}>
+                              {ward.name}
                             </option>
-                          );
-                        })}
+                          ))}
                     </select>
                   </FormControl>
-                  <FormMessage className="text-red-500 text-sm">
-                    {fieldState.error?.message}
-                  </FormMessage>{" "}
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
@@ -370,11 +317,9 @@ export default function SignUpPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                isLoading || !form.formState.isValid || !form.formState.isDirty
-              }
+              disabled={isLoading || !form.formState.isValid}
             >
-              Đăng ký
+              {isLoading ? "Đang xử lý..." : "Đăng ký"}
             </Button>
           </form>
         </Form>

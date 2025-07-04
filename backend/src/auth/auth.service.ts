@@ -48,23 +48,56 @@ export class AuthService {
   async login(user: UserPayloadJwt, res: Response) {
     const access_token = await this.generateToken(user, false);
     const refresh_token = await this.generateToken(user, true);
+    const userData = await this.prisma.user.findUnique({
+      where: { id: user.userId },
+      select: {
+        id: true,
+        avatarUrl: true,
+        name: true,
+        birthDate: true,
+        isActive: true,
+        gender: true,
+      },
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
       path: '/',
     });
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
     return {
+      user: userData,
       access_token,
       refresh_token,
     };
   }
 
-  async refresh(token: string) {
-    const decoded: any = this.verifyToken(token, true);
+  async refresh(token: string, res: Response) {
+    const decoded: any = await this.verifyToken(token, true);
     const { exp, iat, ...payload } = decoded;
-    const access_token = this.generateToken(payload, false);
-    const refresh_token = this.generateToken(payload, true);
+    const access_token = await this.generateToken(payload, false);
+    const refresh_token = await this.generateToken(payload, true);
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
     return {
       access_token,
       refresh_token,
@@ -88,21 +121,20 @@ export class AuthService {
     token: string,
     isRefresh: boolean = false,
   ): Promise<JwtPayload> {
-    try {
-      const isInvalidToken = await this.prisma.invalidToken.findUnique({
-        where: {
-          token: token,
-        },
-      });
-      if (isInvalidToken) throw new UnauthorizedException();
-      return this.jwtService.verify(token, {
-        secret: isRefresh
-          ? env.jwt.JWT_REFRESH_TOKEN_SECRET
-          : env.jwt.JWT_ACCESS_TOKEN_SECRET,
-      });
-    } catch (error) {
-      throw new UnauthorizedException();
+    if (!token) {
+      throw new UnauthorizedException('Token is required');
     }
+    const isInvalidToken = await this.prisma.invalidToken.findUnique({
+      where: {
+        token: token,
+      },
+    });
+    if (isInvalidToken) throw new UnauthorizedException();
+    return this.jwtService.verify(token, {
+      secret: isRefresh
+        ? env.jwt.JWT_REFRESH_TOKEN_SECRET
+        : env.jwt.JWT_ACCESS_TOKEN_SECRET,
+    });
   }
 
   async register(registerUserDto: RegisterUserDto) {
@@ -141,7 +173,9 @@ export class AuthService {
       },
     });
 
-    return newUser;
+    return {
+      message: 'User registered successfully',
+    };
   }
 
   async getHashedPassword(plaintextPassword: string) {

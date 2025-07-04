@@ -10,7 +10,15 @@ import { JwtPayload } from 'lib/shared/types/jwt-payload.type';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          let token = null;
+          if (req && req.cookies) {
+            token = req.cookies['access_token'];
+          }
+          return token;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: env.jwt.JWT_ACCESS_TOKEN_SECRET,
       passReqToCallback: true,
@@ -18,11 +26,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: Request, payload: JwtPayload) {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-    if (!token) {
-      throw new UnauthorizedException()
-    }
-    await this.authService.verifyToken(token);
+    // const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    // if (!token) {
+    //   throw new UnauthorizedException()
+    // }
+    // await this.authService.verifyToken(token);
     return payload;
   }
 }

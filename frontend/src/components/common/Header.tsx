@@ -9,8 +9,29 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "../ui/hover-card";
+import { useAuthStore } from "@/stores/authStore";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { getFallbackAvatar } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { useLogout } from "@/app/(auth)/account/hooks/useLogout";
 
 const Header = () => {
+  const { user, isAuthenticated } = useAuthStore();
+  const { logout } = useLogout();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   return (
     <header className="bg-gradient-to-r from-red-600 to-blue-800 text-white">
       <div className="container mx-auto flex justify-between items-center py-3 px-4">
@@ -154,12 +175,31 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Login Button */}
-          <Link href="/account/signin">
-            <Button className="bg-white hover:bg-gray-200 text-black font-bold rounded rounded-bl-none">
-              Đăng Nhập
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Avatar>
+                  <AvatarImage src={user?.avatarUrl} />
+                  <AvatarFallback className="bg-blue-500 text-white">
+                    {getFallbackAvatar(user?.name || "User")}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <div onClick={handleLogout}>Logout</div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/account/signin">
+              <Button className="bg-white hover:bg-gray-200 text-black font-bold rounded rounded-bl-none">
+                Đăng Nhập
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
