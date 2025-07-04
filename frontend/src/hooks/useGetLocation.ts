@@ -1,11 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import commonService from "../services/commonService";
+import { useGetLocationQuery } from "./query/useGetLocationQuery";
 
 export const useGetLocation = () => {
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["locations"],
-    queryFn: async () => commonService.getLocationList(),
-  });
+  const { data, isLoading, isError, error, refetch } = useGetLocationQuery();
 
   return {
     data,
@@ -13,5 +9,5 @@ export const useGetLocation = () => {
     isError,
     error,
     refetch,
-  };
+  } as const;
 };

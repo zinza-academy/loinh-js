@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +18,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
-import { VaccinationLocation } from "./InjectionPointTab";
+import { useVaccinationSites } from "@/hooks/useGetVaccinationSites";
+import { VaccinationSitesResponse } from "@/types";
 
 interface VaccinationLocationTableProps {
-  onRowClick: (location: VaccinationLocation) => void;
+  onRowClick: (location: VaccinationSitesResponse) => void;
 }
 
 const VaccinationLocationTable = ({
@@ -31,71 +32,55 @@ const VaccinationLocationTable = ({
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
 
-  const tableData: VaccinationLocation[] = [
-    {
-      id: "1",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 1,
-    },
-    {
-      id: "2",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 3,
-    },
-    {
-      id: "3",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 2,
-    },
-    {
-      id: "4",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 6,
-    },
-    {
-      id: "5",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 5,
-    },
-    {
-      id: "6",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 9,
-    },
-    {
-      id: "7",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 8,
-    },
-    {
-      id: "8",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 81,
-    },
-    {
-      id: "9",
-      province: "hanoi",
-      address: "42-44 Nghĩa Dũng",
-      person: "Nguyễn Thị Kim Liên",
-      tableCount: 60,
-    },
-  ];
+  const { data, isLoading, error } = useVaccinationSites();
+  const provinces = useMemo(() => {
+    const uniqueProvinces = new Map<number, { id: number; name: string }>();
+    if (data && data.data && Array.isArray(data.data.data)) {
+      data.data.data.forEach((site) => {
+        uniqueProvinces.set(site.province.id, site.province);
+      });
+    }
+    return Array.from(uniqueProvinces.values());
+  }, [data]);
+
+  const districts = useMemo(() => {
+    if (!data?.data || !selectedProvince) return [];
+    const uniqueDistricts = new Map<number, { id: number; name: string }>();
+    data.data.data
+      .filter((site) => site.province.id.toString() === selectedProvince)
+      .forEach((site: VaccinationSitesResponse) => {
+        uniqueDistricts.set(site.district.id, site.district);
+      });
+    return Array.from(uniqueDistricts.values());
+  }, [data, selectedProvince]);
+
+  const wards = useMemo(() => {
+    if (!data?.data || !selectedDistrict) return [];
+    const uniqueWards = new Map<number, { id: number; name: string }>();
+    data.data.data
+      .filter((site) => site.district.id.toString() === selectedDistrict)
+      .forEach((site) => {
+        uniqueWards.set(site.ward.id, site.ward);
+      });
+    return Array.from(uniqueWards.values());
+  }, [data, selectedDistrict]);
+
+  // Filter data based on selections
+  const filteredData = useMemo(() => {
+    if (!data?.data?.data) return [];
+    return data.data.data.filter((site) => {
+      const matchProvince = selectedProvince
+        ? site.province.id.toString() === selectedProvince
+        : true;
+      const matchDistrict = selectedDistrict
+        ? site.district.id.toString() === selectedDistrict
+        : true;
+      const matchWard = selectedWard
+        ? site.ward.id.toString() === selectedWard
+        : true;
+      return matchProvince && matchDistrict && matchWard;
+    });
+  }, [data, selectedProvince, selectedDistrict, selectedWard]);
 
   return (
     <Card className="w-full">
@@ -114,9 +99,11 @@ const VaccinationLocationTable = ({
                 <SelectValue placeholder="Tỉnh/Thành phố" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="hanoi">Thành phố Hà Nội</SelectItem>
-                <SelectItem value="hcm">Thành phố Hồ Chí Minh</SelectItem>
-                <SelectItem value="danang">Thành phố Đà Nẵng</SelectItem>
+                {provinces.map((province) => (
+                  <SelectItem key={province.id} value={province.id.toString()}>
+                    {province.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -130,9 +117,11 @@ const VaccinationLocationTable = ({
                 <SelectValue placeholder="Quận/Huyện" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="badinh">Quận Ba Đình</SelectItem>
-                <SelectItem value="hoankiem">Quận Hoàn Kiếm</SelectItem>
-                <SelectItem value="dongda">Quận Đống Đa</SelectItem>
+                {districts.map((district) => (
+                  <SelectItem key={district.id} value={district.id.toString()}>
+                    {district.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -143,9 +132,11 @@ const VaccinationLocationTable = ({
                 <SelectValue placeholder="Xã/Phường" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="phucxa">Phúc Xá</SelectItem>
-                <SelectItem value="trucbach">Trúc Bạch</SelectItem>
-                <SelectItem value="viendong">Viên Đông</SelectItem>
+                {wards.map((ward) => (
+                  <SelectItem key={ward.id} value={ward.id.toString()}>
+                    {ward.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -158,60 +149,63 @@ const VaccinationLocationTable = ({
       </CardHeader>
 
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="text-center font-semibold text-gray-900">
-                  STT
-                </TableHead>
-                <TableHead className="font-semibold text-gray-900">
-                  Tên điểm tiêm
-                </TableHead>
-                <TableHead className="font-semibold text-gray-900">
-                  Số nhà, tên đường
-                </TableHead>
-                <TableHead className="font-semibold text-gray-900">
-                  Xã/Phường
-                </TableHead>
-                <TableHead className="font-semibold text-gray-900">
-                  Quận/Huyện
-                </TableHead>
-                <TableHead className="font-semibold text-gray-900">
-                  Tỉnh/Thành phố
-                </TableHead>
-                <TableHead className="font-semibold text-gray-900">
-                  Người đứng đầu cơ sở tiêm chủng
-                </TableHead>
-                <TableHead className="text-center font-semibold text-gray-900">
-                  Số bàn tiêm
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tableData.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onRowClick(row)}
-                >
-                  <TableCell className="text-center">{row.id}</TableCell>
-                  <TableCell className="font-medium">
-                    Bệnh viện Đa khoa Medlatec
-                  </TableCell>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>Phúc Xá</TableCell>
-                  <TableCell>Quận Ba Đình</TableCell>
-                  <TableCell>Thành phố Hà Nội</TableCell>
-                  <TableCell>{row.person}</TableCell>
-                  <TableCell className="text-center">
-                    {row.tableCount}
-                  </TableCell>
+        {!isLoading && !error && (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="text-center font-semibold text-gray-900">
+                    STT
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Tên điểm tiêm
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Số nhà, tên đường
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Xã/Phường
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Quận/Huyện
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Tỉnh/Thành phố
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Người đứng đầu cơ sở tiêm chủng
+                  </TableHead>
+                  <TableHead className="text-center font-semibold text-gray-900">
+                    Số bàn tiêm
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredData.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      No data available
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredData.map((row, index) => (
+                  <TableRow key={row.id} className="hover:bg-gray-50" onClick={() => onRowClick(row)}>
+                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell className="font-medium">{row.name}</TableCell>
+                    <TableCell>{row.addressDetail}</TableCell>
+                    <TableCell>{row.ward.name}</TableCell>
+                    <TableCell>{row.district.name}</TableCell>
+                    <TableCell>{row.province.name}</TableCell>
+                    <TableCell>{row.headOfVaccination}</TableCell>
+                    <TableCell className="text-center">
+                      {row.numberOfInjectionTable ?? "N/A"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

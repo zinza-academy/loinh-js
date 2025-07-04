@@ -11,4 +11,12 @@ export class UpdateVaccinationSiteDto {
 
   @IsOptional()
   wardId?: number;
+
+  @IsNotEmpty()
+  @IsString()
+  addressDetail: string;
+
+  @IsNotEmpty()
+  @IsString()
+  numberOfInjectionTable: string;
 }
