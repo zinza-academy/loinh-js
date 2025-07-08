@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:generate": "prisma generate  --schema=./prisma/",
     "prisma:push": "prisma db push --schema=./prisma/",
-    "console": "ts-node -r tsconfig-paths/register src/console.ts"
+    "console": "ts-node -r tsconfig-paths/register src/console.ts",
+    "console:location": "ts-node -r tsconfig-paths/register src/console.ts import-location-data"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

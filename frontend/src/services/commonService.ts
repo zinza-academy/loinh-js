@@ -1,14 +1,22 @@
 import { API_ENDPOINTS } from "@/configs/api-endpoints";
 import api from "@/configs/axios";
-import { CommonResponse, LocationsResponse } from "@/types";
+import {
+  CommonResponse,
+  LocationsResponse,
+  PaginationResponse,
+  VaccinationSitesResponse,
+} from "@/types";
 
-class CommonService {
-  async getLocationList() {
-    const response = await api.get<CommonResponse<LocationsResponse[]>>(
-      API_ENDPOINTS.LOCATIONS
-    );
-    return response.data;
-  }
+export async function onGetLocationListApi() {
+  const response = await api.get<CommonResponse<LocationsResponse[]>>(
+    API_ENDPOINTS.LOCATIONS
+  );
+  return response.data;
 }
-export const commonService = new CommonService();
-export default commonService;
+
+export async function onGetVaccinationSiteListApi() {
+  const response = await api.get<
+    CommonResponse<PaginationResponse<VaccinationSitesResponse>>
+  >(API_ENDPOINTS.VACCINATION_SITE.GET_ALL);
+  return response.data;
+}

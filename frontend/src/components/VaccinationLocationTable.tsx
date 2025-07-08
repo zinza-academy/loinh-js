@@ -1,108 +1,86 @@
-"use client"
-import { useState } from "react";
+"use client";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Search, Loader2 } from "lucide-react";
+import { useVaccinationSites } from "@/hooks/useGetVaccinationSites";
+import { VaccinationSitesResponse } from "@/types";
 
 const VaccinationLocationTable = () => {
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
 
-  const tableData = [
-    {
-      stt: 1,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 2,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 3,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 4,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 5,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 6,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 7,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 8,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
-    },
-    {
-      stt: 9,
-      tenDiemTiem: "Bệnh viện Đa khoa Medlatec",
-      diaChi: "42-44 Nghĩa Dũng",
-      xaPhuong: "Phúc Xá",
-      quanHuyen: "Quận Ba Đình",
-      tinhThanhPho: "Thành phố Hà Nội",
-      nguoiDongDau: "Nguyễn Thị Kim Liên",
-      soBanTiem: 1
+  const { data, isLoading, error } = useVaccinationSites();
+
+  const provinces = useMemo(() => {
+    const uniqueProvinces = new Map<number, { id: number; name: string }>();
+    if (data && data.data && Array.isArray(data.data.data)) {
+      data.data.data.forEach((site) => {
+        uniqueProvinces.set(site.province.id, site.province);
+      });
     }
-  ];
+    return Array.from(uniqueProvinces.values());
+  }, [data]);
+
+  const districts = useMemo(() => {
+    if (!data?.data || !selectedProvince) return [];
+    const uniqueDistricts = new Map<number, { id: number; name: string }>();
+    data.data.data
+      .filter((site) => site.province.id.toString() === selectedProvince)
+      .forEach((site: VaccinationSitesResponse) => {
+        uniqueDistricts.set(site.district.id, site.district);
+      });
+    return Array.from(uniqueDistricts.values());
+  }, [data, selectedProvince]);
+
+  const wards = useMemo(() => {
+    if (!data?.data || !selectedDistrict) return [];
+    const uniqueWards = new Map<number, { id: number; name: string }>();
+    data.data.data
+      .filter((site) => site.district.id.toString() === selectedDistrict)
+      .forEach((site) => {
+        uniqueWards.set(site.ward.id, site.ward);
+      });
+    return Array.from(uniqueWards.values());
+  }, [data, selectedDistrict]);
+
+  // Filter data based on selections
+  const filteredData = useMemo(() => {
+    if (!data?.data?.data) return [];
+    return data.data.data.filter((site) => {
+      const matchProvince = selectedProvince
+        ? site.province.id.toString() === selectedProvince
+        : true;
+      const matchDistrict = selectedDistrict
+        ? site.district.id.toString() === selectedDistrict
+        : true;
+      const matchWard = selectedWard
+        ? site.ward.id.toString() === selectedWard
+        : true;
+      return matchProvince && matchDistrict && matchWard;
+    });
+  }, [data, selectedProvince, selectedDistrict, selectedWard]);
+
+  // Handle search button click
+  const handleSearch = () => {
+    // Reset filters or perform search logic if needed
+  };
 
   return (
     <Card className="w-full">
@@ -110,85 +88,152 @@ const VaccinationLocationTable = () => {
         <CardTitle className="text-lg font-semibold text-gray-900">
           Tra cứu điểm tiêm theo địa bàn
         </CardTitle>
-        
+
         <div className="flex flex-col lg:flex-row gap-4 items-end">
           <div className="flex-1">
-            <Select value={selectedProvince} onValueChange={setSelectedProvince}>
+            <Select
+              value={selectedProvince}
+              onValueChange={(value) => {
+                setSelectedProvince(value);
+                setSelectedDistrict(""); // Reset district when province changes
+                setSelectedWard(""); // Reset ward when province changes
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Tỉnh/Thành phố" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="hanoi">Thành phố Hà Nội</SelectItem>
-                <SelectItem value="hcm">Thành phố Hồ Chí Minh</SelectItem>
-                <SelectItem value="danang">Thành phố Đà Nẵng</SelectItem>
+                {provinces.map((province) => (
+                  <SelectItem key={province.id} value={province.id.toString()}>
+                    {province.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex-1">
-            <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+            <Select
+              value={selectedDistrict}
+              onValueChange={(value) => {
+                setSelectedDistrict(value);
+                setSelectedWard(""); // Reset ward when district changes
+              }}
+              disabled={!selectedProvince}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Quận/Huyện" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="badinh">Quận Ba Đình</SelectItem>
-                <SelectItem value="hoankkiem">Quận Hoàn Kiếm</SelectItem>
-                <SelectItem value="dongda">Quận Đống Đa</SelectItem>
+                {districts.map((district) => (
+                  <SelectItem key={district.id} value={district.id.toString()}>
+                    {district.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex-1">
-            <Select value={selectedWard} onValueChange={setSelectedWard}>
+            <Select
+              value={selectedWard}
+              onValueChange={(value) => {
+                setSelectedWard(value);
+              }}
+              disabled={!selectedDistrict}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Xã/Phường" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="phucxa">Phúc Xá</SelectItem>
-                <SelectItem value="trucbach">Trúc Bạch</SelectItem>
-                <SelectItem value="viendong">Viên Đông</SelectItem>
+                {wards.map((ward) => (
+                  <SelectItem key={ward.id} value={ward.id.toString()}>
+                    {ward.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+            onClick={handleSearch}
+            disabled={isLoading}
+          >
             <Search className="h-4 w-4 mr-2" />
             Tìm kiếm
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="text-center font-semibold text-gray-900">STT</TableHead>
-                <TableHead className="font-semibold text-gray-900">Tên điểm tiêm</TableHead>
-                <TableHead className="font-semibold text-gray-900">Số nhà, tên đường</TableHead>
-                <TableHead className="font-semibold text-gray-900">Xã/Phường</TableHead>
-                <TableHead className="font-semibold text-gray-900">Quận/Huyện</TableHead>
-                <TableHead className="font-semibold text-gray-900">Tỉnh/Thành phố</TableHead>
-                <TableHead className="font-semibold text-gray-900">Người đứng đầu cơ sở tiêm chủng</TableHead>
-                <TableHead className="text-center font-semibold text-gray-900">Số bàn tiêm</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tableData.map((row) => (
-                <TableRow key={row.stt} className="hover:bg-gray-50">
-                  <TableCell className="text-center">{row.stt}</TableCell>
-                  <TableCell className="font-medium">{row.tenDiemTiem}</TableCell>
-                  <TableCell>{row.diaChi}</TableCell>
-                  <TableCell>{row.xaPhuong}</TableCell>
-                  <TableCell>{row.quanHuyen}</TableCell>
-                  <TableCell>{row.tinhThanhPho}</TableCell>
-                  <TableCell>{row.nguoiDongDau}</TableCell>
-                  <TableCell className="text-center">{row.soBanTiem}</TableCell>
+        {isLoading && (
+          <div className="flex justify-center items-center">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        )}
+        {error && (
+          <p className="text-red-500 text-center">
+            Failed to load vaccination sites
+          </p>
+        )}
+        {!isLoading && !error && (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="text-center font-semibold text-gray-900">
+                    STT
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Tên điểm tiêm
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Số nhà, tên đường
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Xã/Phường
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Quận/Huyện
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Tỉnh/Thành phố
+                  </TableHead>
+                  <TableHead className="font-semibold text-gray-900">
+                    Người đứng đầu cơ sở tiêm chủng
+                  </TableHead>
+                  <TableHead className="text-center font-semibold text-gray-900">
+                    Số bàn tiêm
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredData.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      No data available
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredData.map((row, index) => (
+                  <TableRow key={row.id} className="hover:bg-gray-50">
+                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell className="font-medium">{row.name}</TableCell>
+                    <TableCell>{row.addressDetail}</TableCell>
+                    <TableCell>{row.ward.name}</TableCell>
+                    <TableCell>{row.district.name}</TableCell>
+                    <TableCell>{row.province.name}</TableCell>
+                    <TableCell>{row.headOfVaccination}</TableCell>
+                    <TableCell className="text-center">
+                      {row.numberOfInjectionTable ?? "N/A"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

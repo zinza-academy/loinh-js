@@ -11,4 +11,12 @@ export class CreateVaccinationSiteDto {
 
   @IsNotEmpty()
   wardId: number;
+
+  @IsNotEmpty()
+  @IsString()
+  addressDetail: string;
+  
+  @IsNotEmpty()
+  @IsString()
+  numberOfInjectionTable: string;
 }
