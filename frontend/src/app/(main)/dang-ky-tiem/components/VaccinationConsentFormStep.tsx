@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Form, // ← import the Form provider
+  Form,
   FormControl,
   FormField,
   FormItem,
@@ -11,22 +11,30 @@ import {
 import { useForm } from "react-hook-form";
 import { useStep } from "../contexts/StepContext";
 import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
-
+import { useVaccinationRegistrationStore } from "../store/vacinationRegistrationStore";
+import { useVaccinationRegistration } from "../hooks/useVaccinationRegistration";
+import { VaccinationRegistrationParams } from "../types";
 
 function VaccinationConsentFormStep() {
   const { setCurrentStep } = useStep();
-  interface RegistrationFormData {
-    consent: boolean;
-  }
-  const form = useForm<RegistrationFormData>({
+  const { updateData, data } = useVaccinationRegistrationStore();
+  const { registVaccination, isLoading } = useVaccinationRegistration();
+
+  const form = useForm<VaccinationRegistrationParams>({
     defaultValues: {
       consent: false,
     },
   });
 
   // optional: handle submit
-  const onSubmit = (data: RegistrationFormData) => {
-    console.log("Consent data:", data);
+  const onSubmit = async (formData: VaccinationRegistrationParams) => {
+    updateData({ consent: formData.consent });
+    const payload = {
+      ...data,
+      consent: formData.consent,
+    };
+    await registVaccination(payload as VaccinationRegistrationParams);
+    setCurrentStep(StepNumber.Finish);
   };
 
   return (
@@ -125,8 +133,7 @@ function VaccinationConsentFormStep() {
           <Button
             type="submit"
             className="bg-[#303F9F] hover:bg-[#303F9F]/90 px-8 h-9 rounded-[8px] rounded-bl-none"
-            onClick={() => setCurrentStep(StepNumber.Finish)}
-            disabled={!form.watch("consent")}
+            disabled={!form.watch("consent") || isLoading}
           >
             <span className="font-semibold">TIẾP TỤC</span>
             <svg

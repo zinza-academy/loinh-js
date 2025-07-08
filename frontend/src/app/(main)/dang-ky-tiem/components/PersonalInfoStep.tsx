@@ -19,39 +19,34 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { useStep } from "../contexts/StepContext";
 import { StepNumber } from "@/lib/constants/vaccineRegistrationStep";
-
-interface RegistrationFormData {
-  priorityGroup: string;
-  identityNumber: string;
-  profession: string;
-  workplace: string;
-  currentLocation: string;
-  desiredVaccineDate: string;
-  desiredVaccineSession: string;
-}
+import { useVaccinationRegistrationStore } from "../store/vacinationRegistrationStore";
+import { VaccinationRegistrationParams } from "../types";
+import { useVaccinationSites } from "@/hooks/useGetVaccinationSites";
+import { useGetLocation } from "@/hooks/useGetLocation";
 
 function PersonalInfoStep() {
-  const form = useForm<RegistrationFormData>({
+  const form = useForm<VaccinationRegistrationParams>({
     defaultValues: {
       priorityGroup: "",
-      identityNumber: "",
-      profession: "",
-      workplace: "",
-      currentLocation: "",
-      desiredVaccineDate: "",
-      desiredVaccineSession: "",
+      healthInsuranceNumber: "",
+      currentJob: "",
+      currentAddressId: null,
+      preferredSession: "",
+      registrationDate: null,
+      vaccinationSiteId: null,
+      consent: false,
     },
   });
 
-  const router = useRouter();
-
   const { setCurrentStep } = useStep();
-
-  const onSubmit = (data: RegistrationFormData) => {
-    console.log("Registration data:", data);
+  const { updateData } = useVaccinationRegistrationStore();
+  const { data, isLoading } = useVaccinationSites();
+  const { data: locationData, isLoading: isLocationLoading } = useGetLocation();
+  const onSubmit = (data: VaccinationRegistrationParams) => {
+    updateData(data);
+    setCurrentStep(StepNumber.ConsentForm);
   };
 
   return (
@@ -74,7 +69,7 @@ function PersonalInfoStep() {
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || ""}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -101,12 +96,16 @@ function PersonalInfoStep() {
 
               <FormField
                 control={form.control}
-                name="identityNumber"
+                name="healthInsuranceNumber"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Số thẻ BHYT</FormLabel>
                     <FormControl>
-                      <Input placeholder="Số thẻ BHYT" {...field} />
+                      <Input
+                        placeholder="Số thẻ BHYT"
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -115,13 +114,13 @@ function PersonalInfoStep() {
 
               <FormField
                 control={form.control}
-                name="profession"
+                name="currentJob"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nghề nghiệp</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || ""}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -145,58 +144,33 @@ function PersonalInfoStep() {
                 )}
               />
 
+              {/* currentAddressId: number | null */}
               <FormField
                 control={form.control}
-                name="workplace"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Đơn vị công tác</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Đơn vị công tác" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="hospital">Bệnh viện</SelectItem>
-                        <SelectItem value="school">Trường học</SelectItem>
-                        <SelectItem value="company">Công ty</SelectItem>
-                        <SelectItem value="government">
-                          Cơ quan nhà nước
-                        </SelectItem>
-                        <SelectItem value="other">Khác</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="currentLocation"
+                name="currentAddressId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Địa chỉ hiện tại</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      onValueChange={(val) =>
+                        field.onChange(val ? Number(val) : null)
+                      }
+                      value={field.value ? String(field.value) : ""}
+                      disabled={!locationData || isLocationLoading}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Địa chỉ hiện tại" />
+                          <SelectValue placeholder="Chọn địa chỉ" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="hanoi">Hà Nội</SelectItem>
-                        <SelectItem value="hcm">TP. Hồ Chí Minh</SelectItem>
-                        <SelectItem value="danang">Đà Nẵng</SelectItem>
-                        <SelectItem value="other">
-                          Tỉnh/Thành phố khác
-                        </SelectItem>
+                        {locationData &&
+                          Array.isArray(locationData.data) &&
+                          locationData.data.map((loc) => (
+                            <SelectItem key={loc.id} value={String(loc.id)}>
+                              {loc.name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -212,28 +186,28 @@ function PersonalInfoStep() {
               2. Thông tin đăng ký tiêm chủng
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* registrationDate: Date | null */}
               <FormField
                 control={form.control}
-                name="desiredVaccineDate"
+                name="registrationDate"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Ngày muốn được tiêm (dự kiến)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Ngày/Tháng/Năm" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="this-week">Tuần này</SelectItem>
-                        <SelectItem value="next-week">Tuần tới</SelectItem>
-                        <SelectItem value="this-month">Tháng này</SelectItem>
-                        <SelectItem value="next-month">Tháng tới</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        value={
+                          field.value
+                            ? new Date(field.value).toISOString().split("T")[0]
+                            : ""
+                        }
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value ? new Date(e.target.value) : null
+                          )
+                        }
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -241,13 +215,13 @@ function PersonalInfoStep() {
 
               <FormField
                 control={form.control}
-                name="desiredVaccineSession"
+                name="preferredSession"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Buổi tiêm mong muốn</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || ""}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -255,10 +229,44 @@ function PersonalInfoStep() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="morning">Buổi sáng</SelectItem>
-                        <SelectItem value="afternoon">Buổi chiều</SelectItem>
-                        <SelectItem value="evening">Buổi tối</SelectItem>
-                        <SelectItem value="anytime">Bất kỳ</SelectItem>
+                        <SelectItem value="MORNING">Buổi sáng</SelectItem>
+                        <SelectItem value="AFTERNOON">Buổi chiều</SelectItem>
+                        <SelectItem value="ANYTIME">Bất kỳ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* vaccinationSiteId: number | null */}
+              <FormField
+                control={form.control}
+                name="vaccinationSiteId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Điểm tiêm</FormLabel>
+                    <Select
+                      onValueChange={(val) =>
+                        field.onChange(val ? Number(val) : null)
+                      }
+                      value={field.value ? String(field.value) : ""}
+                      disabled={!data || isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn điểm tiêm" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {data &&
+                          data.data &&
+                          Array.isArray(data.data.data) &&
+                          data.data.data.map((site) => (
+                            <SelectItem key={site.id} value={String(site.id)}>
+                              {site.name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -298,7 +306,7 @@ function PersonalInfoStep() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push("/")}
+              onClick={() => setCurrentStep(StepNumber.PersonalInfo)}
               className="flex items-center space-x-2 h-9 rounded-[8px] rounded-br-none bg-white text-[#303F9F] hover:text-[#303F9F] hover:bg-gray-200 border-[#303F9F] "
             >
               <svg
@@ -330,7 +338,6 @@ function PersonalInfoStep() {
             <Button
               type="submit"
               className="bg-[#303F9F] hover:bg-[#303F9F]/90 px-8 h-9 rounded-[8px] rounded-bl-none"
-              onClick={() => setCurrentStep(StepNumber.ConsentForm)}
               disabled={!form.formState.isValid || !form.formState.isDirty}
             >
               <span className="font-semibold">TIẾP TỤC</span>
