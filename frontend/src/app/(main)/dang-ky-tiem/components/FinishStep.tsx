@@ -4,6 +4,7 @@ import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useVaccinationRegistrationStore } from "../store/vacinationRegistrationStore";
 import { useAuthStore } from "@/stores/authStore";
+import dayjs from "dayjs";
 
 function FinishStep() {
   const router = useRouter();
@@ -64,9 +65,9 @@ function FinishStep() {
           <h3 className="font-semibold mb-2">Ngày sinh</h3>
           <p>
             {user?.birthDate
-              ? typeof user.birthDate === "string"
-                ? user.birthDate
-                : user.birthDate.toLocaleDateString()
+              ? dayjs(user.birthDate).isValid()
+                ? dayjs(user.birthDate).format("DD/MM/YYYY")
+                : ""
               : ""}
           </p>
 

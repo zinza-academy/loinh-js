@@ -10,6 +10,7 @@ import {
 import { useGetRegistVaccinationSuccess } from "../hooks/useGetRegistVaccinationSuccess";
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import dayjs from "dayjs";
 
 const ResultsTab = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,9 +47,9 @@ const ResultsTab = () => {
                 <TableCell>{user?.name}</TableCell>
                 <TableCell>
                   {user?.birthDate
-                    ? typeof user.birthDate === "string"
-                      ? user.birthDate
-                      : user.birthDate.toLocaleDateString()
+                    ? dayjs(user.birthDate).isValid()
+                      ? dayjs(user.birthDate).format("DD/MM/YYYY")
+                      : ""
                     : ""}
                 </TableCell>
                 <TableCell>{user?.gender}</TableCell>

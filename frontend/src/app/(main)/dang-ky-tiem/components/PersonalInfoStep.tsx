@@ -165,7 +165,7 @@ function PersonalInfoStep() {
                       </FormControl>
                       <SelectContent>
                         {locationData &&
-                          Array.isArray(locationData.data) &&
+                          locationData.data &&
                           locationData.data.map((loc) => (
                             <SelectItem key={loc.id} value={String(loc.id)}>
                               {loc.name}
