@@ -7,20 +7,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-// Mock data for registration results
-const registrationData = [
-  {
-    stt: 1,
-    fullName: "Nguyễn Văn A",
-    birthDate: "16/10/1994",
-    gender: "Nam",
-    idNumber: "030012345678",
-    status: "Đăng ký thành công",
-  },
-];
+import { useGetRegistVaccinationSuccess } from "../hooks/useGetRegistVaccinationSuccess";
+import { useState } from "react";
+import { useAuthStore } from "@/stores/authStore";
+import dayjs from "dayjs";
 
 const ResultsTab = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [pagination, _setPagination] = useState({
+    page: 1,
+    limit: 10,
+  });
+
+  const { data, isPending } = useGetRegistVaccinationSuccess(
+    pagination.page,
+    pagination.limit
+  );
+
+  const { user } = useAuthStore();
+
   return (
     <Table>
       <TableHeader>
@@ -34,24 +39,32 @@ const ResultsTab = () => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {registrationData.map((item) => (
-          <TableRow key={item.stt}>
-            <TableCell>{item.stt}</TableCell>
-            <TableCell>{item.fullName}</TableCell>
-            <TableCell>{item.birthDate}</TableCell>
-            <TableCell>{item.gender}</TableCell>
-            <TableCell>{item.idNumber}</TableCell>
-            <TableCell>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-blue-600 border-blue-600"
-              >
-                {item.status}
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+        {isPending
+          ? "Loading..."
+          : data.data?.data.data.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.id}</TableCell>
+                <TableCell>{user?.name}</TableCell>
+                <TableCell>
+                  {user?.birthDate
+                    ? dayjs(user.birthDate).isValid()
+                      ? dayjs(user.birthDate).format("DD/MM/YYYY")
+                      : ""
+                    : ""}
+                </TableCell>
+                <TableCell>{user?.gender}</TableCell>
+                <TableCell>{item.healthInsuranceNumber}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 border-blue-600"
+                  >
+                    {"Đăng ký thành công"}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
       </TableBody>
     </Table>
   );

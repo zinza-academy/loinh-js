@@ -34,4 +34,5 @@ model VaccinationRegistration {
 enum PreferredSession {
     MORNING
     AFTERNOON
+    ANYTIME
 }

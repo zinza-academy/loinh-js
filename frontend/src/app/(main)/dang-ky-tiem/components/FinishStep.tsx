@@ -2,13 +2,16 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useVaccinationRegistrationStore } from "../store/vacinationRegistrationStore";
+import { useAuthStore } from "@/stores/authStore";
+import dayjs from "dayjs";
 
-interface FinishStepProp {
-  registrationId: string;
-}
-
-function FinishStep({ registrationId }: FinishStepProp) {
+function FinishStep() {
   const router = useRouter();
+  const { registrationId, data } = useVaccinationRegistrationStore();
+  const { user } = useAuthStore();
+  // registrationId is now a top-level field in the store
+  const regId = registrationId || "";
   return (
     <div className="text-center space-y-6">
       <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
@@ -17,7 +20,7 @@ function FinishStep({ registrationId }: FinishStepProp) {
       </h2>
       <div className="text-lg">
         Mã đặt tiêm của bạn là{" "}
-        <span className="font-bold text-red-600">{registrationId}</span>
+        <span className="font-bold text-red-600">{regId}</span>
       </div>
 
       <div className="bg-gray-50 p-6 rounded-lg text-left">
@@ -47,36 +50,42 @@ function FinishStep({ registrationId }: FinishStepProp) {
       <div className="grid grid-cols-2 gap-8 text-left">
         <div>
           <h3 className="font-semibold mb-2">Họ và tên</h3>
-          <p>Nguyễn A</p>
+          <p>{user?.name}</p>
 
           <h3 className="font-semibold mb-2 mt-4">
             Số CMND/CCCD/Mã định danh công dân
           </h3>
-          <p>030012345678</p>
+          <p>{"NaN"}</p>
 
           <h3 className="font-semibold mb-2 mt-4">Tỉnh/Thành phố</h3>
-          <p>Thành phố Hà Nội</p>
+          <p>{"NaN"}</p>
         </div>
 
         <div>
           <h3 className="font-semibold mb-2">Ngày sinh</h3>
-          <p>16/10/1994</p>
+          <p>
+            {user?.birthDate
+              ? dayjs(user.birthDate).isValid()
+                ? dayjs(user.birthDate).format("DD/MM/YYYY")
+                : ""
+              : ""}
+          </p>
 
           <h3 className="font-semibold mb-2 mt-4">Số thẻ BHYT</h3>
-          <p></p>
+          <p>{data.healthInsuranceNumber}</p>
 
           <h3 className="font-semibold mb-2 mt-4">Quận/Huyện</h3>
-          <p>Quận Long Biên</p>
+          <p>{"NaN"}</p>
         </div>
 
         <div>
           <h3 className="font-semibold mb-2">Giới tính</h3>
-          <p>Nam</p>
+          <p>{user?.gender}</p>
         </div>
 
         <div>
           <h3 className="font-semibold mb-2">Xã/Phường</h3>
-          <p>Phường Giang Biên</p>
+          <p>{"NaN"}</p>
         </div>
       </div>
 

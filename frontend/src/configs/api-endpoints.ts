@@ -14,5 +14,11 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string | number) => `/vaccination-sites/${id}`,
     DELETE: (id: string | number) => `/vaccination-sites/${id}`,
   },
-  
+  VACCINATION_REGISTRATION: {
+    CREATE: "/vaccination-registrations",
+    GET_ALL: "/vaccination-registrations",
+    GET_BY_ID: (id: string | number) => `/vaccination-registrations/${id}`,
+    UPDATE: (id: string | number) => `/vaccination-registrations/${id}`,
+    DELETE: (id: string | number) => `/vaccination-registrations/${id}`,
+  },
 };
