@@ -20,13 +20,12 @@ import { useUpdateUser } from "../hooks/useUpdateUser";
 import dayjs from "dayjs";
 import { UpdateUserParams } from "../types";
 
-// Define Zod schema for form validation
 const formSchema = z
   .object({
     identityNumber: z.string().optional(),
     fullName: z.string().optional(),
     gender: z.enum(["MALE", "FEMALE"]).optional(),
-    birthDate: z.date().optional(), // Made optional to avoid validation issues
+    birthDate: z.date().optional(),
     province: z.string().optional(),
     district: z.string().optional(),
     ward: z.string().optional(),
@@ -44,7 +43,6 @@ const AccountTab = () => {
   const { user } = useAuthStore();
   const userId = user?.id ? String(user.id) : undefined;
 
-  // Fetch user and location data
   const {
     data: userData,
     isLoading: isUserLoading,
@@ -59,7 +57,6 @@ const AccountTab = () => {
     useChangePassword();
   const { updateUser, isPending: isUpdateUserPending } = useUpdateUser();
 
-  // Initialize form with react-hook-form
   const methods = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -78,6 +75,7 @@ const AccountTab = () => {
   const {
     handleSubmit,
     setValue,
+    reset,
     control,
     getValues,
     setError,
@@ -85,84 +83,6 @@ const AccountTab = () => {
     formState: { errors, isSubmitting },
   } = methods;
 
-  // Sync form with fetched user data
-  useEffect(() => {
-    if (!userData?.data) {
-      console.log("userData not available:", userData);
-      return;
-    }
-
-    console.log("Raw userData:", userData.data);
-    console.log("Raw locationData:", locationData?.data);
-
-    // Extract values from userData
-    const provinceId = userData.data.location?.province?.id?.toString() || "";
-    const districtId = userData.data.location?.district?.id?.toString() || "";
-    const wardId = userData.data.location?.ward?.id?.toString() || "";
-    const gender = ["MALE", "FEMALE"].includes(userData.data.gender)
-      ? userData.data.gender
-      : undefined;
-    const birthDate = userData.data.birthDate
-      ? new Date(userData.data.birthDate)
-      : undefined;
-
-    console.log("Extracted values:", {
-      identityNumber: userData.data.identityNumber,
-      fullName: userData.data.name,
-      gender,
-      birthDate,
-      provinceId,
-      districtId,
-      wardId,
-    });
-
-    // Set form values
-    setValue("identityNumber", userData.data.identityNumber || "");
-    setValue("fullName", userData.data.name || "");
-    setValue("gender", gender as "MALE" | "FEMALE" | undefined);
-    setValue("birthDate", birthDate);
-    setValue("province", provinceId);
-    setValue("district", districtId);
-    setValue("ward", wardId);
-    setValue("password", "");
-    setValue("confirmPassword", "");
-
-    // Log form state immediately after setting values
-    console.log("Form values after setValue:", getValues());
-
-    // Log validation results for debugging
-    if (locationData?.data) {
-      const isProvinceValid = provinceId
-        ? locationData.data.some(
-            (p: { id: number }) => p.id.toString() === provinceId
-          )
-        : false;
-      const isDistrictValid =
-        districtId && isProvinceValid
-          ? locationData.data
-              .find((p: { id: number }) => p.id.toString() === provinceId)
-              ?.districts.some(
-                (d: { id: number }) => d.id.toString() === districtId
-              )
-          : false;
-      const isWardValid =
-        wardId && isDistrictValid
-          ? locationData.data
-              .find((p: { id: number }) => p.id.toString() === provinceId)
-              ?.districts.find(
-                (d: { id: number }) => d.id.toString() === districtId
-              )
-              ?.wards.some((w: { id: number }) => w.id.toString() === wardId)
-          : false;
-      console.log("Validation results:", {
-        isProvinceValid,
-        isDistrictValid,
-        isWardValid,
-      });
-    }
-  }, [userData?.data, locationData?.data, setValue, getValues]);
-
-  // Watch province and district
   const selectedProvince = useWatch({
     control,
     name: "province",
@@ -174,68 +94,96 @@ const AccountTab = () => {
     defaultValue: "",
   });
 
-  // Reset district and ward when province changes
   useEffect(() => {
-    if (!selectedProvince) return;
-    setValue("district", "");
-    setValue("ward", "");
-    console.log("Province changed, reset district and ward:", getValues());
-  }, [selectedProvince, setValue, getValues]);
+    if (!userData?.data || !locationData?.data) {
+      return;
+    }
 
-  // Reset ward when district changes
+    const provinceId = userData.data.location?.province?.id?.toString() || "";
+    const districtId = userData.data.location?.district?.id?.toString() || "";
+    const wardId = userData.data.location?.ward?.id?.toString() || "";
+    const gender = ["MALE", "FEMALE"].includes(userData.data.gender)
+      ? userData.data.gender
+      : undefined;
+    const birthDate = userData.data.birthDate
+      ? new Date(userData.data.birthDate)
+      : undefined;
+
+    reset({
+      identityNumber: userData.data.identityNumber || "",
+      fullName: userData.data.name || "",
+      gender: gender as "MALE" | "FEMALE" | undefined,
+      birthDate,
+      province: provinceId,
+      district: districtId,
+      ward: wardId,
+      password: "",
+      confirmPassword: "",
+    });
+  }, [userData?.data, locationData?.data, reset, getValues]);
+
   useEffect(() => {
-    if (!selectedDistrict) return;
-    setValue("ward", "");
-    console.log("District changed, reset ward:", getValues());
-  }, [selectedDistrict, setValue, getValues]);
+    if (selectedProvince) {
+      const currentDistrict = getValues("district");
+      const districtExists = locationData?.data
+        .find((p) => p.id.toString() === selectedProvince)
+        ?.districts.some((d) => d.id.toString() === currentDistrict);
+      if (!districtExists) {
+        setValue("district", "");
+        setValue("ward", "");
+      }
+    }
+  }, [selectedProvince, setValue, getValues, locationData?.data]);
 
-  // Memoize dynamic location options
+  useEffect(() => {
+    if (selectedDistrict) {
+      const currentWard = getValues("ward");
+      const wardExists = locationData?.data
+        .find((p) => p.id.toString() === selectedProvince)
+        ?.districts.find((d) => d.id.toString() === selectedDistrict)
+        ?.wards.some((w) => w.id.toString() === currentWard);
+      if (!wardExists) {
+        setValue("ward", "");
+      }
+    }
+  }, [
+    selectedDistrict,
+    setValue,
+    getValues,
+    selectedProvince,
+    locationData?.data,
+  ]);
+
   const locationOptions = useMemo(() => {
     if (!locationData?.data) return { provinces: [], districts: [], wards: [] };
 
-    const provinces = locationData.data.map(
-      (province: { id: number; name: string }) => ({
-        value: province.id.toString(),
-        label: province.name,
-      })
-    );
+    const provinces = locationData.data.map((province) => ({
+      value: province.id.toString(),
+      label: province.name,
+    }));
 
-    const districts =
-      (selectedProvince &&
-        locationData.data
-          .find(
-            (province: { id: number }) =>
-              province.id.toString() === selectedProvince
-          )
-          ?.districts.map((district: { id: number; name: string }) => ({
+    const districts = selectedProvince
+      ? locationData.data
+          .find((p) => p.id.toString() === selectedProvince)
+          ?.districts.map((district) => ({
             value: district.id.toString(),
             label: district.name,
-          }))) ||
-      [];
+          })) || []
+      : [];
 
-    const wards =
-      (selectedProvince &&
-        selectedDistrict &&
-        locationData.data
-          .find(
-            (province: { id: number }) =>
-              province.id.toString() === selectedProvince
-          )
-          ?.districts.find(
-            (district: { id: number }) =>
-              district.id.toString() === selectedDistrict
-          )
-          ?.wards.map((ward: { id: number; name: string }) => ({
+    const wards = selectedDistrict
+      ? locationData.data
+          .find((p) => p.id.toString() === selectedProvince)
+          ?.districts.find((d) => d.id.toString() === selectedDistrict)
+          ?.wards.map((ward) => ({
             value: ward.id.toString(),
             label: ward.name,
-          }))) ||
-      [];
+          })) || []
+      : [];
 
-    console.log("locationOptions:", { provinces, districts, wards });
     return { provinces, districts, wards };
   }, [locationData?.data, selectedProvince, selectedDistrict]);
 
-  // Handle form submission for user details
   const onSubmitUserDetails = async (data: FormData) => {
     clearErrors("root");
     const updateData: UpdateUserParams = {};
@@ -255,14 +203,11 @@ const AccountTab = () => {
       return;
     }
     if (Object.keys(updateData).length === 0) {
-      console.log("No changes to submit");
       return;
     }
     await updateUser(userId, updateData);
-    console.log("User details updated:", updateData);
   };
 
-  // Handle form submission for password
   const onSubmitPassword = async (data: FormData) => {
     if (!data.password) {
       setError("password", { message: "Vui lòng nhập mật khẩu mới" });
@@ -270,12 +215,10 @@ const AccountTab = () => {
     }
     clearErrors("root");
     await changePassword({ newPassword: data.password });
-    console.log("Password updated successfully");
     setValue("password", "");
     setValue("confirmPassword", "");
   };
 
-  // Handle cancel
   const handleCancel = () => {
     const provinceId = userData?.data.location?.province?.id?.toString() || "";
     const districtId = userData?.data.location?.district?.id?.toString() || "";
@@ -287,21 +230,20 @@ const AccountTab = () => {
       ? new Date(userData.data.birthDate)
       : undefined;
 
-    setValue("identityNumber", userData?.data.identityNumber || "");
-    setValue("fullName", userData?.data.name || "");
-    setValue("gender", gender as "MALE" | "FEMALE" | undefined);
-    setValue("birthDate", birthDate);
-    setValue("province", provinceId);
-    setValue("district", districtId);
-    setValue("ward", wardId);
-    setValue("password", "");
-    setValue("confirmPassword", "");
-
-    console.log("Form values after cancel:", getValues());
+    reset({
+      identityNumber: userData?.data.identityNumber || "",
+      fullName: userData?.data.name || "",
+      gender: gender as "MALE" | "FEMALE" | undefined,
+      birthDate,
+      province: provinceId,
+      district: districtId,
+      ward: wardId,
+      password: "",
+      confirmPassword: "",
+    });
     clearErrors();
   };
 
-  // Memoize gender options
   const genderOptions = useMemo(
     () => [
       { value: "MALE", label: "Nam" },
@@ -310,7 +252,6 @@ const AccountTab = () => {
     []
   );
 
-  // Loading and error states
   if (!userId) {
     return (
       <div className="text-center py-4">Đang tải thông tin người dùng...</div>
@@ -400,19 +341,29 @@ const AccountTab = () => {
             <FormField
               control={control}
               name="birthDate"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ngày sinh</FormLabel>
                   <FormControl>
                     <Input
                       type="date"
                       value={
-                        userData?.data.birthDate &&
-                        dayjs(userData.data.birthDate).isValid()
-                          ? dayjs(userData.data.birthDate).format("DD/MM/YYYY")
+                        field.value && dayjs(field.value).isValid()
+                          ? dayjs(field.value).format("YYYY-MM-DD")
                           : ""
                       }
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? new Date(e.target.value) : undefined
+                        )
+                      }
                       className="mt-1"
+                      disabled={
+                        isSubmitting ||
+                        isUserLoading ||
+                        isLocationLoading ||
+                        isUpdateUserPending
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -463,11 +414,7 @@ const AccountTab = () => {
                     <select
                       {...field}
                       value={field.value ?? ""}
-                      onChange={(e) => {
-                        field.onChange(e.target.value || "");
-                        setValue("district", "");
-                        setValue("ward", "");
-                      }}
+                      onChange={(e) => field.onChange(e.target.value || "")}
                       disabled={
                         isSubmitting ||
                         isUserLoading ||
@@ -499,10 +446,7 @@ const AccountTab = () => {
                     <select
                       {...field}
                       value={field.value ?? ""}
-                      onChange={(e) => {
-                        field.onChange(e.target.value || "");
-                        setValue("ward", "");
-                      }}
+                      onChange={(e) => field.onChange(e.target.value || "")}
                       disabled={
                         isSubmitting ||
                         isUserLoading ||
