@@ -55,3 +55,31 @@ export interface Ward {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface User {
+  id: number;
+  identityNumber: string;
+  gender: string;
+  name: string;
+  birthDate: null | Date;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  phone: null | string;
+  avatarUrl: null;
+  wardId: number;
+  location: {
+    ward: {
+      id: number;
+      name: string;
+    };
+    district: {
+      id: number;
+      name: string;
+    };
+    province: {
+      id: number;
+      name: string;
+    };
+  };
+}

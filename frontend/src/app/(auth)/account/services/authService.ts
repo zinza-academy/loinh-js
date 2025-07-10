@@ -79,3 +79,13 @@ export async function onRefreshTokenApi(): Promise<string | null> {
     return null;
   }
 }
+
+export async function onChangePasswordApi(
+  newPassword: string
+): Promise<CommonResponse<{ message: string }>> {
+  const response = await api.post<CommonResponse<{ message: string }>>(
+    API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+    { newPassword }
+  );
+  return response.data;
+}

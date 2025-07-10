@@ -1,16 +1,26 @@
-import { UserGender } from "@enum/user.enum";
-import { IsDateString, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, MinLength } from "class-validator";
+import { UserGender } from '@enum/user.enum';
+import {
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class LoginUserDto {
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(6)
-    password: string;
-} 
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string;
+}
 
 export class RegisterUserDto {
   @IsEmail()
@@ -37,7 +47,6 @@ export class RegisterUserDto {
   @IsDateString()
   @IsOptional()
   birthDate: Date;
-
 
   @IsInt()
   @Min(1)
@@ -67,6 +76,13 @@ export class ResetPasswordWithTokenDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(8)
+  newPassword: string;
+}
+
+export class ChangePassworDto {
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
   newPassword: string;
 }

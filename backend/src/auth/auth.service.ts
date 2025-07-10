@@ -15,6 +15,7 @@ import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
 import {
   JwtPayload,
+  UserPayloadDecodedJwt,
   UserPayloadJwt,
   VerifyResetPasswordCodeDto,
 } from 'lib/shared/types/jwt-payload.type';
@@ -79,6 +80,14 @@ export class AuthService {
       access_token,
       refresh_token,
     };
+  }
+  async changePassword(user: UserPayloadDecodedJwt, newPassword: string) {
+    const hashedPassword = await this.getHashedPassword(newPassword);
+    await this.prisma.identity.update({
+      where: { userId: user.sub },
+      data: { password: hashedPassword },
+    });
+    return { message: 'Password changed successfully' };
   }
 
   async refresh(token: string, res: Response) {

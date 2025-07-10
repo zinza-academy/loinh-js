@@ -16,3 +16,7 @@ export class VerifyResetPasswordCodeDto {
 export class UserPayloadJwt {
   userId: number;
 }
+
+export class UserPayloadDecodedJwt {
+  sub: number;
+}

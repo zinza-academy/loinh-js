@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  ChangePassworDto,
   LoginUserDto,
   RegisterUserDto,
   ResetPasswordWithTokenDto,
@@ -52,6 +53,15 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.refresh(req.cookies['refresh_token'], res);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Body() changePasswordDto: ChangePassworDto,
+    @JwtDecodedPayload() user,
+  ) {
+    return this.authService.changePassword(user, changePasswordDto.newPassword);
   }
 
   @Post('request-password-reset-code')

@@ -4,6 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { genSaltSync, hashSync } from 'bcryptjs';
+import { env } from 'config/envConfig';
 import { CreateUserDto } from 'lib/shared/dtos/user/create-user.dto';
 import { UpdateUserDto } from 'lib/shared/dtos/user/update-user.dto';
 import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
@@ -11,6 +13,8 @@ import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
+  private readonly saltRounds = env.auth.SALT_ROUNDS;
+
   async create(createUserDto: CreateUserDto) {
     const user = await this.prisma.user.create({
       data: {
@@ -48,6 +52,17 @@ export class UserService {
     if (identity?.role === 'ADMIN') {
       result = await this.prisma.user.findUnique({
         where: { id },
+        include: {
+          ward: {
+            include: {
+              district: {
+                include: {
+                  province: true,
+                },
+              },
+            },
+          },
+        },
       });
     } else {
       if (user.sub !== id) {
@@ -57,12 +72,27 @@ export class UserService {
         where: { id: user.sub },
       });
     }
+    const { ward, ...rest } = result;
 
+    const formattedResult = {
+      ...rest,
+      location: {
+        ward: { name: ward?.name || '', id: ward?.id || null },
+        district: {
+          name: ward?.district?.name || '',
+          id: ward?.district?.id || null,
+        },
+        province: {
+          name: ward?.district?.province?.name || '',
+          id: ward?.district?.province?.id || null,
+        },
+      },
+    };
     if (!result) {
       throw new NotFoundException('User not found');
     }
 
-    return result;
+    return formattedResult;
   }
 
   findUserByEmail(email: string) {
@@ -73,6 +103,12 @@ export class UserService {
         user: true,
       },
     });
+  }
+
+  async getHashedPassword(plaintextPassword: string) {
+    const salt = genSaltSync(this.saltRounds);
+    const hashedPassword = hashSync(plaintextPassword, salt);
+    return hashedPassword;
   }
 
   async update(id: number, user, updateUserDto: UpdateUserDto) {
@@ -88,22 +124,48 @@ export class UserService {
     if (!isUserExisted) {
       throw new NotFoundException('User not found');
     }
-    
+
     if (identity?.role === 'ADMIN') {
+      if (updateUserDto.password) {
+        const hashedPassword = await this.getHashedPassword(
+          updateUserDto.password,
+        );
+        await this.prisma.identity.update({
+          where: { userId: id },
+          data: {
+            password: hashedPassword,
+            role: updateUserDto.role,
+          },
+        });
+      }
       return this.prisma.user.update({
         where: { id },
         data: {
           ...updateUserDto,
+          wardId:
+            updateUserDto.wardId !== undefined && updateUserDto.wardId !== null
+              ? typeof updateUserDto.wardId === 'string'
+                ? isNaN(Number(updateUserDto.wardId))
+                  ? null
+                  : Number(updateUserDto.wardId)
+                : updateUserDto.wardId
+              : undefined,
         },
       });
     } else {
-      if (user.sub !== id) {
-        throw new ForbiddenException('You are not allowed to update this user');
-      }
+      const { password, ...updateUserDtoWithoutPassword } = updateUserDto;
       return this.prisma.user.update({
         where: { id: user.sub },
         data: {
-          ...updateUserDto,
+          ...updateUserDtoWithoutPassword,
+          wardId:
+            updateUserDto.wardId !== undefined && updateUserDto.wardId !== null
+              ? typeof updateUserDto.wardId === 'string'
+                ? isNaN(Number(updateUserDto.wardId))
+                  ? null
+                  : Number(updateUserDto.wardId)
+                : updateUserDto.wardId
+              : undefined,
         },
       });
     }
