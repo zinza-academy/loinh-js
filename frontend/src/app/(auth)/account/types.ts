@@ -42,3 +42,11 @@ export interface SignUpFormValues {
   identityNumber: string;
   gender: string;
 }
+
+export interface ChangePasswordResponse {
+  message: string;
+}
+
+export interface ChangePasswordParams {
+  newPassword: string;
+}

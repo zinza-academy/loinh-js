@@ -31,4 +31,15 @@ export const TOAST_MESSAGES = {
     duration: 3000,
     variant: "destructive",
   },
+  CHANGE_PASSWORD_SUCCESS: {
+    title: "Password changed successfully!",
+    description: "You can now log in with your new password.",
+    duration: 2000,
+  },
+  CHANGE_PASSWORD_ERROR: {
+    title: "Password change failed!",
+    description: "Please check your details and try again.",
+    duration: 3000,
+    variant: "destructive" as const,
+  },
 } as const;

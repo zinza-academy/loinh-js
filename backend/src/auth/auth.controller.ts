@@ -54,6 +54,15 @@ export class AuthController {
     return this.authService.refresh(req.cookies['refresh_token'], res);
   }
 
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Body() changePasswordDto: { newPassword: string },
+    @JwtDecodedPayload() user,
+  ) {
+    return this.authService.changePassword(user, changePasswordDto.newPassword);
+  }
+
   @Post('request-password-reset-code')
   async requestPasswordReset(@Body() body: { email: string }) {
     return this.authService.requestPasswordReset(body.email);

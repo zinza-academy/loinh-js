@@ -1,3 +1,4 @@
+
 export const API_ENDPOINTS = {
   API_BASE_URL: "http://localhost:8080",
   LOCATIONS: "/location",
@@ -6,6 +7,7 @@ export const API_ENDPOINTS = {
     SIGNUP: "/auth/register",
     LOGOUT: "/auth/logout",
     REFRESH_TOKEN: "/auth/refresh-token",
+    CHANGE_PASSWORD: "/auth/change-password",
   },
   VACCINATION_SITE: {
     CREATE: "/vaccination-sites",
@@ -20,5 +22,12 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: string | number) => `/vaccination-registrations/${id}`,
     UPDATE: (id: string | number) => `/vaccination-registrations/${id}`,
     DELETE: (id: string | number) => `/vaccination-registrations/${id}`,
+  },
+  USER: {
+    CREATE: "/users",
+    GET_ALL: "/users",
+    GET_BY_ID: (id: string | number) => `/users/${id}`,
+    UPDATE: (id: string | number) => `/users/${id}`,
+    DELETE: (id: string | number) => `/users/${id}`,
   },
 };

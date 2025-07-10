@@ -1,5 +1,5 @@
 import { UserRole } from '@enum/user.enum';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -8,7 +8,23 @@ export class UpdateUserDto {
 
   @IsString()
   @IsOptional()
+  identityNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  birthDate?: string;
+
+  @IsString()
+  @IsOptional()
   password?: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsNumber()
+  @IsOptional()
+  wardId?: number;
 
   @IsEnum(UserRole)
   @IsOptional()
