@@ -37,7 +37,6 @@ export class RolesGuard implements CanActivate {
       where: { userId: user.sub },
       select: { role: true },
     });
-    console.log('sfsdfls', identity);
     if (!identity) {
       throw new ForbiddenException(
         "You don't have permission to access this resource",

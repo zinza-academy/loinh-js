@@ -174,16 +174,12 @@ export class AuthService {
     const { email, password, ...userData } = registerUserDto;
     const newUser = await this.userService.create({
       ...userData,
-    });
-
-    // Hash và tạo Identity
-    const hashedPassword = await this.getHashedPassword(password);
-    await this.prisma.identity.create({
-      data: {
-        email,
-        password: hashedPassword,
-        userId: newUser.id,
-      },
+      email,
+      password,
+      birthDate:
+        userData.birthDate instanceof Date
+          ? userData.birthDate.toISOString()
+          : userData.birthDate,
     });
 
     return {

@@ -1,5 +1,6 @@
 import { UserRole } from '@enum/user.enum';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { UserGender } from '@enum/user.enum';
 
 export class UpdateUserDto {
   @IsString()
@@ -21,6 +22,10 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   phone?: string;
+
+  @IsEnum(UserGender)
+  @IsOptional()
+  gender?: UserGender;
 
   @IsNumber()
   @IsOptional()
