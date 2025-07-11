@@ -1,3 +1,5 @@
+import { UserRole } from "@/app/(auth)/account/types";
+
 export interface CommonResponse<T> {
   data: T;
 }
@@ -63,6 +65,7 @@ export interface User {
   name: string;
   birthDate: null | Date;
   isActive: boolean;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
   phone: null | string;

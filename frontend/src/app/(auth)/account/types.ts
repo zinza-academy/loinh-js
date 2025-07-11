@@ -25,10 +25,16 @@ export interface LogoutResponse {
   message: string;
 }
 
+export enum UserRole {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}
+
 export interface User {
   id: number;
   avatarUrl: string;
   name: string;
+  role: UserRole;
   birthDate: Date;
   isActive: boolean;
   gender: string;

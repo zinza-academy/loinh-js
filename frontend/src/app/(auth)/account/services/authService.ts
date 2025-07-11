@@ -24,6 +24,7 @@ export async function onLoginApi(
     id: response.data.data.user.id,
     name: response.data.data.user.name,
     avatarUrl: response.data.data.user.avatarUrl,
+    role: response.data.data.user.role,
     birthDate: response.data.data.user.birthDate,
     isActive: response.data.data.user.isActive,
     gender: response.data.data.user.gender,

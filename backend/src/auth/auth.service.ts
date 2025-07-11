@@ -49,6 +49,10 @@ export class AuthService {
   async login(user: UserPayloadJwt, res: Response) {
     const access_token = await this.generateToken(user, false);
     const refresh_token = await this.generateToken(user, true);
+    const identity = await this.prisma.identity.findUnique({
+      where: { userId: user.userId },
+      select: { role: true },
+    });
     const userData = await this.prisma.user.findUnique({
       where: { id: user.userId },
       select: {
@@ -76,7 +80,7 @@ export class AuthService {
       path: '/',
     });
     return {
-      user: userData,
+      user: { ...userData, role: identity?.role },
       access_token,
       refresh_token,
     };

@@ -21,4 +21,27 @@ export const TOAST_MESSAGES = {
     duration: 3000,
     variant: "destructive" as const,
   },
+
+  CREATE_INJECTION_REGISTRATION_SUCCESS: {
+    title: "Injection registration created successfully!",
+    description: "The new injection registration has been added.",
+    duration: 2000,
+  },
+  CREATE_INJECTION_REGISTRATION_ERROR: {
+    title: "Failed to create injection registration!",
+    description: "Please check your details and try again.",
+    duration: 3000,
+    variant: "destructive" as const,
+  },
+  UPDATE_INJECTION_REGISTRATION_SUCCESS: {
+    title: "Injection registration updated successfully!",
+    description: "The injection registration has been updated.",
+    duration: 2000,
+  },
+  UPDATE_INJECTION_REGISTRATION_ERROR: {
+    title: "Failed to update injection registration!",
+    description: "Please check your details and try again.",
+    duration: 3000,
+    variant: "destructive" as const,
+  },
 } as const;

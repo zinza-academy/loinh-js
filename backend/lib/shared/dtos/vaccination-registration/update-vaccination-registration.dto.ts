@@ -6,7 +6,11 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { PreferredSession } from '@enum/vaccine.enum';
+import {
+  PreferredSession,
+  VaccineStatus,
+  VaccineType,
+} from '@enum/vaccine.enum';
 
 export class UpdateVaccinationRegistrationDto {
   @IsString()
@@ -35,4 +39,12 @@ export class UpdateVaccinationRegistrationDto {
   @IsInt()
   @IsOptional()
   vaccinationSiteId?: number;
+
+  @IsEnum(VaccineType)
+  @IsOptional()
+  vaccineType?: VaccineType;
+
+  @IsEnum(VaccineStatus)
+  @IsOptional()
+  status?: VaccineStatus;
 }

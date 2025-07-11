@@ -39,32 +39,42 @@ const ResultsTab = () => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {isPending
-          ? "Loading..."
-          : data.data?.data.data.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.id}</TableCell>
-                <TableCell>{user?.name}</TableCell>
-                <TableCell>
-                  {user?.birthDate
-                    ? dayjs(user.birthDate).isValid()
-                      ? dayjs(user.birthDate).format("DD/MM/YYYY")
-                      : ""
-                    : ""}
-                </TableCell>
-                <TableCell>{user?.gender}</TableCell>
-                <TableCell>{item.healthInsuranceNumber}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-blue-600 border-blue-600"
-                  >
-                    {"Đăng ký thành công"}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+        {isPending ? (
+          <TableRow>
+            <TableCell colSpan={6} className="text-center">
+              Loading...
+            </TableCell>
+          </TableRow>
+        ) : data?.data?.data?.data?.length && data.data.data.data.length > 0 ? (
+          data.data.data.data.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>{item.id}</TableCell>
+              <TableCell>{user?.name}</TableCell>
+              <TableCell>
+                {user?.birthDate && dayjs(user.birthDate).isValid()
+                  ? dayjs(user.birthDate).format("DD/MM/YYYY")
+                  : ""}
+              </TableCell>
+              <TableCell>{user?.gender}</TableCell>
+              <TableCell>{item.healthInsuranceNumber}</TableCell>
+              <TableCell>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-600 border-blue-600"
+                >
+                  Đăng ký thành công
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={6} className="text-center">
+              Không có dữ liệu
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   );

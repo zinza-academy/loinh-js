@@ -41,19 +41,42 @@ export class VaccinationRegistrationService {
       result = await this.prisma.vaccinationRegistration.findMany({
         skip: (page - 1) * limit,
         take: limit,
+        include: {
+          user: {
+            select: {
+              name: true,
+              identityNumber: true,
+              birthDate: true,
+              gender: true,
+              wardId: true,
+            },
+          },
+        },
       });
       total = await this.prisma.vaccinationRegistration.count();
+    } else {
+      result = await this.prisma.vaccinationRegistration.findMany({
+        where: { userId: user.sub },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              name: true,
+              identityNumber: true,
+              birthDate: true,
+              gender: true,
+              wardId: true,
+            },
+          },
+        },
+      });
+      total = await this.prisma.vaccinationRegistration.count({
+        where: { userId: user.sub },
+      });
     }
 
     // If not admin, return only the registrations of the user
-    result = await this.prisma.vaccinationRegistration.findMany({
-      where: { userId: user.sub },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-    total = await this.prisma.vaccinationRegistration.count({
-      where: { userId: user.sub },
-    });
 
     return {
       data: result,

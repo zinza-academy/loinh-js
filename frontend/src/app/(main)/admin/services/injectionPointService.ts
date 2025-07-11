@@ -2,6 +2,8 @@ import api from "@/configs/axios";
 import {
   CreateInjectionPointParams,
   CreateInjectionPointResponse,
+  CreateInjectionRegistrationParams,
+  CreateInjectionRegistrationResponse,
   UpdateInjectionPointParams,
   UpdateInjectionPointResponse,
 } from "../types";
@@ -25,5 +27,15 @@ export async function onUpdateInjectionPointApi(
   const response = await api.patch<
     CommonResponse<UpdateInjectionPointResponse>
   >(API_ENDPOINTS.VACCINATION_SITE.UPDATE(id), data);
+  return response.data;
+}
+
+export async function onCreateInjectionRegistrationApi (
+  data: CreateInjectionRegistrationParams
+): Promise<CommonResponse<CreateInjectionRegistrationResponse>> {
+  const response = await api.post<CommonResponse<CreateInjectionRegistrationResponse>>(
+    API_ENDPOINTS.VACCINATION_REGISTRATION.CREATE,
+    data
+  );
   return response.data;
 }
