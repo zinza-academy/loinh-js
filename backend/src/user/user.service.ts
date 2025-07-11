@@ -87,6 +87,7 @@ export class UserService {
 
     const formattedResult = {
       ...rest,
+      role: identity?.role,
       location: {
         ward: { name: ward?.name || '', id: ward?.id || null },
         district: {
