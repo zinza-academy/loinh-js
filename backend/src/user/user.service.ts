@@ -70,6 +70,17 @@ export class UserService {
       }
       result = await this.prisma.user.findUnique({
         where: { id: user.sub },
+        include: {
+          ward: {
+            include: {
+              district: {
+                include: {
+                  province: true,
+                },
+              },
+            },
+          },
+        },
       });
     }
     const { ward, ...rest } = result;

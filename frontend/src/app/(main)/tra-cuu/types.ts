@@ -4,11 +4,19 @@ export interface GetregistVaccinationSuccessResponse {
   userId: number;
   priorityGroup: string;
   registrationDate: null | number;
+  vaccineType: string;
   status: null | number;
   currentJob: null | number;
   currentAddressId: null | number;
   preferredSession: null | string;
   vaccinationSiteId: null | number;
+  user: {
+    name: string;
+    identityNumber: string;
+    birthDate: Date;
+    gender: string;
+    wardId: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

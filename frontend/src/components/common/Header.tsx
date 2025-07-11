@@ -2,28 +2,39 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "../ui/hover-card";
+} from "@/components/ui/hover-card";
 import { useAuthStore } from "@/stores/authStore";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getFallbackAvatar } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import { useLogout } from "@/app/(auth)/account/hooks/useLogout";
+import { useGetUserDetail } from "@/app/(main)/tra-cuu/hooks/useGetUserDetail";
 
 const Header = () => {
   const { user, isAuthenticated } = useAuthStore();
-  const { logout } = useLogout();
+  const { logout, isLoading: isLoggingOut } = useLogout();
+  const userId = user?.id ? String(user.id) : undefined;
+  const {
+    data: userData,
+    isLoading: isUserLoading,
+    error: userError,
+  } = useGetUserDetail(userId);
 
   const handleLogout = async () => {
     try {
@@ -32,38 +43,54 @@ const Header = () => {
       console.error("Logout failed:", error);
     }
   };
+
   return (
     <header className="bg-gradient-to-r from-red-600 to-blue-800 text-white">
-      <div className="container mx-auto flex justify-between items-center py-3 px-4">
+      <div className="container mx-auto flex justify-between items-center py-3 px-4 sm:px-6 lg:px-8">
         {/* Logo + Title */}
-        <div className="flex items-center space-x-2">
-          <Image src="/image/Logo.png" alt="Logo" width={30} height={30} />
-          <span className="uppercase font-semibold text-sm md:text-base">
+        <Link href="/" className="flex items-center space-x-2">
+          <Image
+            src="/image/Logo.png"
+            alt="Logo Cổng thông tin tiêm chủng COVID-19"
+            width={40}
+            height={40}
+            priority
+          />
+          <span className="uppercase font-semibold text-sm md:text-lg">
             Cổng thông tin tiêm chủng COVID-19
           </span>
-        </div>
+        </Link>
 
-        {/* Navigation + Login */}
-        <div className="flex gap-4 items-center">
-          <nav className="hidden md:flex space-x-6 items-center text-md font-[500]">
-            <Link href="/" className="hover:underline">
+        {/* Navigation + User Menu */}
+        <div className="flex items-center gap-4">
+          <nav className="hidden md:flex items-center space-x-6 text-md font-medium">
+            <Link
+              href="/"
+              className="hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded"
+            >
               Trang chủ
             </Link>
-            <Link href="/dang-ky-tiem" className="hover:underline">
+            <Link
+              href="/dang-ky-tiem"
+              className="hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded"
+            >
               Đăng ký tiêm
             </Link>
 
             {/* Dropdown Tra cứu */}
             <HoverCard>
               <HoverCardTrigger asChild>
-                <div className="flex items-center gap-1 cursor-pointer hover:underline">
-                  Tra cứu <ChevronDown className="w-3 h-3" />
+                <div className="flex items-center gap-1 cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded">
+                  Tra cứu <ChevronDown className="w-4 h-4" />
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent align="start" className="p-3 space-y-3 w-80">
+              <HoverCardContent
+                align="start"
+                className="p-3 space-y-3 w-80 bg-white text-gray-800 rounded-lg shadow-lg"
+              >
                 <Link
                   href="/tra-cuu?tab=certificate"
-                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-100 transition"
+                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <svg
                     width="36"
@@ -97,7 +124,7 @@ const Header = () => {
                     />
                   </svg>
                   <div>
-                    <h5 className="whitespace-nowrap">
+                    <h5 className="whitespace-nowrap font-medium">
                       Tra cứu chứng nhận tiêm
                     </h5>
                   </div>
@@ -116,7 +143,7 @@ const Header = () => {
                 </Link>
                 <Link
                   href="/tra-cuu?tab=results"
-                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-100 transition"
+                  className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <svg
                     width="36"
@@ -125,7 +152,7 @@ const Header = () => {
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <rect width="36" height="36" rx="6" fill="#f8f8f8" />
+                    <rect width="36" height="36" rx="6" fill="#F8F8F8" />
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -150,7 +177,7 @@ const Header = () => {
                     />
                   </svg>
                   <div>
-                    <h5 className="whitespace-nowrap">
+                    <h5 className="whitespace-nowrap font-medium">
                       Tra cứu kết quả đăng ký
                     </h5>
                   </div>
@@ -170,32 +197,106 @@ const Header = () => {
               </HoverCardContent>
             </HoverCard>
 
-            <Link href="/documents" className="hover:underline">
+            <Link
+              href="/documents"
+              className="hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded"
+            >
               Tài liệu
             </Link>
           </nav>
 
           {isAuthenticated ? (
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Avatar>
-                  <AvatarImage src={user?.avatarUrl} />
-                  <AvatarFallback className="bg-blue-500 text-white">
-                    {getFallbackAvatar(user?.name || "User")}
-                  </AvatarFallback>
-                </Avatar>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="focus:outline-none focus:ring-2 focus:ring-white rounded-full"
+                  aria-label="Menu người dùng"
+                >
+                  <Avatar>
+                    <AvatarImage
+                      src={user?.avatarUrl}
+                      alt={user?.name || "User"}
+                    />
+                    <AvatarFallback className="bg-blue-500 text-white">
+                      {getFallbackAvatar(user?.name || "User")}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <div onClick={handleLogout}>Logout</div>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 bg-white text-gray-800 rounded-lg shadow-lg z-50"
+              >
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/account"
+                    className="w-full px-4 py-2 hover:bg-gray-100 focus:bg-gray-100"
+                  >
+                    Hồ sơ
+                  </Link>
+                </DropdownMenuItem>
+                {isUserLoading ? (
+                  <DropdownMenuItem
+                    disabled
+                    className="px-4 py-2 text-gray-500"
+                  >
+                    Đang tải...
+                  </DropdownMenuItem>
+                ) : userError ? (
+                  <DropdownMenuItem
+                    disabled
+                    className="px-4 py-2 text-gray-500"
+                  >
+                    Lỗi tải dữ liệu người dùng
+                  </DropdownMenuItem>
+                ) : userData?.data?.role === "ADMIN" ? (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex w-full px-4 py-2 hover:bg-gray-100 focus:bg-gray-100">
+                      Admin
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem>
+                          <Link
+                            href="/admin/users"
+                            className="w-full px-4 py-2 hover:bg-gray-100 focus:bg-gray-100"
+                          >
+                            Quản lý người dùng
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            href="/admin/injection-points"
+                            className="w-full px-4 py-2 hover:bg-gray-100 focus:bg-gray-100"
+                          >
+                            Quản lý điểm tiêm
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            href="/admin/vaccine-registration"
+                            className="w-full px-4 py-2 hover:bg-gray-100 focus:bg-gray-100"
+                          >
+                            Quản lý tiêm chủng
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                ) : null}
+                <DropdownMenuSeparator className="bg-gray-200" />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
+                >
+                  {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Link href="/account/signin">
-              <Button className="bg-white hover:bg-gray-200 text-black font-bold rounded rounded-bl-none">
+              <Button className="bg-white hover:bg-gray-200 text-black font-bold rounded rounded-bl-none focus:outline-none focus:ring-2 focus:ring-white">
                 Đăng Nhập
               </Button>
             </Link>

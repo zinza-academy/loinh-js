@@ -18,7 +18,8 @@ model VaccinationRegistration {
     userId                Int               @map("user_id")
     priorityGroup         String            @map("priority_group")
     registrationDate      DateTime?         @map("registration_date")
-    status                String?
+    status                VaccinationStatus @default(PENDING) @map("status")
+    vaccineType           VaccinationType?  @map("vaccine_type")
     currentJob            String?           @map("current_job")
     currentAddressId      Int?              @map("current_address_id")
     preferredSession      PreferredSession? @default(MORNING) @map("preferred_session")
@@ -35,4 +36,17 @@ enum PreferredSession {
     MORNING
     AFTERNOON
     ANYTIME
+}
+
+enum VaccinationStatus {
+    PENDING
+    APPROVED
+    COMPLETED
+    REJECTED
+}
+
+enum VaccinationType {
+    ASTRAZENECA
+    PFIZER
+    MODERNA
 }

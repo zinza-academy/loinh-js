@@ -28,12 +28,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
-import { VaccineRegistration } from "@/lib/types/vaccination.response";
+import { useGetRegistVaccinationSuccess } from "../../tra-cuu/hooks/useGetRegistVaccinationSuccess";
+import dayjs from "dayjs";
+import { GetregistVaccinationSuccessResponse } from "../../tra-cuu/types";
+import { useUpdateInjectionRegistration } from "../hooks/useUpdateInjectionRegistration";
+import { useCreateInjectionRegistration } from "../hooks/useCreateInjectionRegistration";
+import { VaccineStatus, VaccineType } from "../types";
 
 type FormData = {
-  fullName: string;
-  idNumber: string;
-  registrationDate: string;
+  name: string;
+  identityNumber: string;
+  createdAt: string;
   vaccineType: string;
   status: string;
 };
@@ -41,7 +46,7 @@ type FormData = {
 function VaccineRegistrationTab() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRegistration, setSelectedRegistration] =
-    useState<VaccineRegistration | null>(null);
+    useState<GetregistVaccinationSuccessResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
@@ -49,51 +54,37 @@ function VaccineRegistrationTab() {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      fullName: "",
-      idNumber: "",
-      registrationDate: "",
+      name: "",
+      identityNumber: "",
+      createdAt: dayjs().format("DD/MM/YYYY"), // Ngày hiện tại mặc định
       vaccineType: "",
       status: "",
     },
   });
 
-  const tableData: VaccineRegistration[] = [
-    {
-      id: "1",
-      fullName: "Nguyễn Văn A",
-      idNumber: "030012345678",
-      registrationDate: "08/09/2021",
-      vaccineType: "AstraZeneca",
-      status: "Registered",
-    },
-    {
-      id: "2",
-      fullName: "Trần Thị B",
-      idNumber: "030012345679",
-      registrationDate: "09/09/2021",
-      vaccineType: "Pfizer",
-      status: "Completed",
-    },
-    {
-      id: "3",
-      fullName: "Lê Văn C",
-      idNumber: "030012345680",
-      registrationDate: "10/09/2021",
-      vaccineType: "Moderna",
-      status: "Pending",
-    },
-  ];
+  const vaccineTypeValue = watch("vaccineType");
+  const statusValue = watch("status");
 
-  const handleRowClick = (registration: VaccineRegistration) => {
+  const { data: registVaccinationData } = useGetRegistVaccinationSuccess(1, 10);
+  const { updateInjectionRegistration } = useUpdateInjectionRegistration();
+  const { createInjectionRegistration } = useCreateInjectionRegistration();
+
+  const handleRowClick = (
+    registration: GetregistVaccinationSuccessResponse
+  ) => {
     setSelectedRegistration(registration);
-    setValue("fullName", registration.fullName);
-    setValue("idNumber", registration.idNumber);
-    setValue("registrationDate", registration.registrationDate);
-    setValue("vaccineType", registration.vaccineType);
-    setValue("status", registration.status);
+    setValue("name", registration.user.name);
+    setValue("identityNumber", registration.user.identityNumber);
+    setValue("createdAt", dayjs(registration.createdAt).format("DD/MM/YYYY"));
+    setValue("vaccineType", registration.vaccineType || "");
+    setValue(
+      "status",
+      registration.status !== null ? String(registration.status) : ""
+    );
     setIsModalOpen(true);
   };
 
@@ -103,12 +94,38 @@ function VaccineRegistrationTab() {
     setIsModalOpen(false);
   };
 
-  const handleConfirm = (data: FormData) => {
-    // Here you would typically save the updated registration data
-    console.log("Form data:", data);
+  const handleConfirm = async (data: FormData) => {
+    if (selectedRegistration) {
+      // Cập nhật đăng ký
+      await updateInjectionRegistration(String(selectedRegistration.id), {
+        vaccineType: data.vaccineType as VaccineType,
+        status: data.status as VaccineStatus,
+      });
+    } else {
+      // Tạo mới đăng ký
+      await createInjectionRegistration({
+        name: data.name,
+        identityNumber: data.identityNumber,
+        createdAt: dayjs(data.createdAt, "DD/MM/YYYY").toISOString(),
+        vaccineType: data.vaccineType as VaccineType,
+        status: data.status as VaccineStatus,
+      });
+    }
     setSelectedRegistration(null);
     reset();
     setIsModalOpen(false);
+  };
+
+  const handleOpenModal = () => {
+    setSelectedRegistration(null);
+    reset({
+      name: "",
+      identityNumber: "",
+      createdAt: dayjs().format("DD/MM/YYYY"),
+      vaccineType: "",
+      status: "",
+    });
+    setIsModalOpen(true);
   };
 
   return (
@@ -141,7 +158,10 @@ function VaccineRegistrationTab() {
               </CardTitle>
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={handleOpenModal}
+                  >
                     Thêm đăng ký
                   </Button>
                 </DialogTrigger>
@@ -158,58 +178,57 @@ function VaccineRegistrationTab() {
                     className="space-y-4"
                   >
                     <div>
-                      <Label htmlFor="fullName">Họ và tên</Label>
+                      <Label htmlFor="name">Họ và tên</Label>
                       <Input
-                        id="fullName"
-                        {...register("fullName", {
+                        id="name"
+                        {...register("name", {
                           required: "Họ và tên là bắt buộc",
                         })}
                         className="mt-1"
+                        disabled={!!selectedRegistration} // Chỉ disabled khi cập nhật
                       />
-                      {errors.fullName && (
+                      {errors.name && (
                         <p className="text-red-500 text-sm mt-1">
-                          {errors.fullName.message}
+                          {errors.name.message}
                         </p>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="idNumber">CMND/CCCD</Label>
+                      <Label htmlFor="identityNumber">CMND/CCCD</Label>
                       <Input
-                        id="idNumber"
-                        {...register("idNumber", {
+                        id="identityNumber"
+                        {...register("identityNumber", {
                           required: "CMND/CCCD là bắt buộc",
-                          pattern: {
-                            value: /^\d{12}$/,
-                            message: "CMND/CCCD phải là 12 chữ số",
-                          },
                         })}
                         className="mt-1"
+                        disabled={!!selectedRegistration} // Chỉ disabled khi cập nhật
                       />
-                      {errors.idNumber && (
+                      {errors.identityNumber && (
                         <p className="text-red-500 text-sm mt-1">
-                          {errors.idNumber.message}
+                          {errors.identityNumber.message}
                         </p>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="registrationDate">Ngày đăng ký</Label>
+                      <Label htmlFor="createdAt">Ngày đăng ký</Label>
                       <Input
-                        id="registrationDate"
-                        {...register("registrationDate", {
+                        id="createdAt"
+                        {...register("createdAt", {
                           required: "Ngày đăng ký là bắt buộc",
                         })}
                         className="mt-1"
+                        disabled // Luôn disabled vì ngày được tự động tạo
                       />
-                      {errors.registrationDate && (
+                      {errors.createdAt && (
                         <p className="text-red-500 text-sm mt-1">
-                          {errors.registrationDate.message}
+                          {errors.createdAt.message}
                         </p>
                       )}
                     </div>
                     <div>
                       <Label htmlFor="vaccineType">Loại vắc xin</Label>
                       <Select
-                        value={selectedRegistration?.vaccineType || ""}
+                        value={vaccineTypeValue}
                         onValueChange={(value) =>
                           setValue("vaccineType", value)
                         }
@@ -218,11 +237,11 @@ function VaccineRegistrationTab() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="astrazeneca">
+                          <SelectItem value="ASTRAZENECA">
                             AstraZeneca
                           </SelectItem>
-                          <SelectItem value="pfizer">Pfizer</SelectItem>
-                          <SelectItem value="moderna">Moderna</SelectItem>
+                          <SelectItem value="PFIZER">Pfizer</SelectItem>
+                          <SelectItem value="MODERNA">Moderna</SelectItem>
                         </SelectContent>
                       </Select>
                       <input
@@ -240,16 +259,17 @@ function VaccineRegistrationTab() {
                     <div>
                       <Label htmlFor="status">Trạng thái</Label>
                       <Select
-                        value={selectedRegistration?.status || ""}
+                        value={statusValue}
                         onValueChange={(value) => setValue("status", value)}
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="registered">Registered</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="PENDING">PENDING</SelectItem>
+                          <SelectItem value="APPROVED">APPROVED</SelectItem>
+                          <SelectItem value="COMPLETED">COMPLETED</SelectItem>
+                          <SelectItem value="REJECTED">REJECTED</SelectItem>
                         </SelectContent>
                       </Select>
                       <input
@@ -311,28 +331,33 @@ function VaccineRegistrationTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tableData
-                    .filter(
-                      (row) =>
-                        row.fullName
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase()) ||
-                        row.idNumber.includes(searchQuery)
-                    )
-                    .map((row) => (
-                      <TableRow
-                        key={row.id}
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleRowClick(row)}
-                      >
-                        <TableCell className="text-center">{row.id}</TableCell>
-                        <TableCell>{row.fullName}</TableCell>
-                        <TableCell>{row.idNumber}</TableCell>
-                        <TableCell>{row.registrationDate}</TableCell>
-                        <TableCell>{row.vaccineType}</TableCell>
-                        <TableCell>{row.status}</TableCell>
-                      </TableRow>
-                    ))}
+                  {registVaccinationData?.data?.data.data &&
+                    registVaccinationData.data.data.data
+                      .filter(
+                        (row) =>
+                          row.user.name
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase()) ||
+                          row.user.identityNumber.includes(searchQuery)
+                      )
+                      .map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleRowClick(row)}
+                        >
+                          <TableCell className="text-center">
+                            {row.id}
+                          </TableCell>
+                          <TableCell>{row.user.name}</TableCell>
+                          <TableCell>{row.user.identityNumber}</TableCell>
+                          <TableCell>
+                            {dayjs(row.createdAt).format("DD/MM/YYYY")}
+                          </TableCell>
+                          <TableCell>{row.vaccineType}</TableCell>
+                          <TableCell>{row.status}</TableCell>
+                        </TableRow>
+                      ))}
                 </TableBody>
               </Table>
             </div>
