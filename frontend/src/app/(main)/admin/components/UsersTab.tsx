@@ -18,6 +18,7 @@ import { User } from "../types";
 import CreateUserModal from "./CreateUserModal";
 import UpdateUserModal from "./UpdateUserModal";
 import dayjs from "dayjs";
+import { UserGender } from "@/lib/types/user";
 
 function UsersTab() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,8 +62,8 @@ function UsersTab() {
     }
   };
 
-  const getGenderLabel = (gender: string) => {
-    return gender === "MALE" ? "Nam" : "Nữ";
+  const getGenderLabel = (gender: UserGender) => {
+    return gender === UserGender.MALE ? "Nam" : "Nữ";
   };
 
   const formatDate = (date: string | null) => {

@@ -1,3 +1,5 @@
+import { UserGender } from "@/lib/types/user";
+
 export interface CreateInjectionPointParams {
   addressDetail: string;
   name: string;
@@ -152,7 +154,7 @@ export interface GetAllUsersResponse {
 export interface User {
   id: number;
   identityNumber: string;
-  gender: string;
+  gender: UserGender;
   name: string;
   birthDate: string | null;
   isActive: boolean;

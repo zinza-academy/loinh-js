@@ -19,12 +19,15 @@ import { useChangePassword } from "@/app/(auth)/account/hooks/useChangePassword"
 import { useUpdateUser } from "../hooks/useUpdateUser";
 import dayjs from "dayjs";
 import { UpdateUserParams } from "../types";
+import { UserGender } from "@/lib/types/user";
 
 const formSchema = z
   .object({
     identityNumber: z.string().optional(),
     fullName: z.string().optional(),
-    gender: z.enum(["MALE", "FEMALE"]).optional(),
+    gender: z
+      .enum(Object.values(UserGender) as [string, ...string[]])
+      .optional(),
     birthDate: z.date().optional(),
     province: z.string().optional(),
     district: z.string().optional(),
@@ -102,8 +105,12 @@ const AccountTab = () => {
     const provinceId = userData.data.location?.province?.id?.toString() || "";
     const districtId = userData.data.location?.district?.id?.toString() || "";
     const wardId = userData.data.location?.ward?.id?.toString() || "";
-    const gender = ["MALE", "FEMALE"].includes(userData.data.gender)
-      ? userData.data.gender
+    const gender = [
+      UserGender.MALE,
+      UserGender.FEMALE,
+      UserGender.OTHER,
+    ].includes(userData.data.gender as UserGender)
+      ? (userData.data.gender as UserGender)
       : undefined;
     const birthDate = userData.data.birthDate
       ? new Date(userData.data.birthDate)
@@ -112,7 +119,7 @@ const AccountTab = () => {
     reset({
       identityNumber: userData.data.identityNumber || "",
       fullName: userData.data.name || "",
-      gender: gender as "MALE" | "FEMALE" | undefined,
+      gender: gender as UserGender | undefined,
       birthDate,
       province: provinceId,
       district: districtId,
@@ -223,7 +230,11 @@ const AccountTab = () => {
     const provinceId = userData?.data.location?.province?.id?.toString() || "";
     const districtId = userData?.data.location?.district?.id?.toString() || "";
     const wardId = userData?.data.location?.ward?.id?.toString() || "";
-    const gender = ["MALE", "FEMALE"].includes(userData?.data?.gender ?? "")
+    const gender = [
+      UserGender.MALE,
+      UserGender.FEMALE,
+      UserGender.OTHER,
+    ].includes(userData?.data?.gender as UserGender)
       ? userData?.data?.gender
       : undefined;
     const birthDate = userData?.data.birthDate
@@ -233,7 +244,7 @@ const AccountTab = () => {
     reset({
       identityNumber: userData?.data.identityNumber || "",
       fullName: userData?.data.name || "",
-      gender: gender as "MALE" | "FEMALE" | undefined,
+      gender: gender as UserGender | undefined,
       birthDate,
       province: provinceId,
       district: districtId,
@@ -246,8 +257,9 @@ const AccountTab = () => {
 
   const genderOptions = useMemo(
     () => [
-      { value: "MALE", label: "Nam" },
-      { value: "FEMALE", label: "Nữ" },
+      { value: UserGender.MALE, label: "Nam" },
+      { value: UserGender.FEMALE, label: "Nữ" },
+      { value: UserGender.OTHER, label: "Khác" },
     ],
     []
   );

@@ -23,11 +23,12 @@ import { useGetLocation } from "@/hooks/useGetLocation";
 import { District, LocationsResponse, Ward } from "@/types";
 import { useUpdateUser } from "../hooks/useUpdateUser";
 import { User, UpdateUserParams } from "../types";
+import { UserGender, UserRole } from "@/lib/types/user";
 
 const formSchema = z.object({
   name: z.string().min(1, "Tên là bắt buộc"),
   identityNumber: z.string().min(1, "Số CMND/CCCD là bắt buộc"),
-  gender: z.enum(["MALE", "FEMALE"], {
+  gender: z.enum(Object.values(UserGender) as [string, ...string[]], {
     errorMap: () => ({ message: "Giới tính là bắt buộc" }),
   }),
   phone: z.string().optional(),
@@ -35,7 +36,7 @@ const formSchema = z.object({
   provinceId: z.string().min(1, "Tỉnh/thành phố là bắt buộc"),
   districtId: z.string().min(1, "Quận/huyện là bắt buộc"),
   wardId: z.string().min(1, "Phường/xã là bắt buộc"),
-  role: z.enum(["ADMIN", "USER"], {
+  role: z.enum(Object.values(UserRole) as [string, ...string[]], {
     errorMap: () => ({ message: "Vai trò là bắt buộc" }),
   }),
   password: z.string().optional(),
@@ -81,13 +82,13 @@ function UpdateUserModal({ open, onOpenChange, user }: UpdateUserModalProps) {
       reset({
         name: user.name || "",
         identityNumber: user.identityNumber || "",
-        gender: user.gender as "MALE" | "FEMALE",
+        gender: user.gender as UserGender,
         phone: user.phone || "",
         birthDate,
         provinceId,
         districtId,
         wardId,
-        role: user.identity?.role as "ADMIN" | "USER",
+        role: user.identity?.role as UserRole,
         password: "",
       });
 
@@ -224,15 +225,16 @@ function UpdateUserModal({ open, onOpenChange, user }: UpdateUserModalProps) {
               <Select
                 value={watch("gender")}
                 onValueChange={(value) =>
-                  setValue("gender", value as "MALE" | "FEMALE")
+                  setValue("gender", value as UserGender)
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn giới tính" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MALE">Nam</SelectItem>
-                  <SelectItem value="FEMALE">Nữ</SelectItem>
+                  <SelectItem value={UserGender.MALE}>Nam</SelectItem>
+                  <SelectItem value={UserGender.FEMALE}>Nữ</SelectItem>
+                  <SelectItem value={UserGender.OTHER}>Khác</SelectItem>
                 </SelectContent>
               </Select>
               {errors.gender && (

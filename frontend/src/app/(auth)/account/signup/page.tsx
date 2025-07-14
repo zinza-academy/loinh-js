@@ -19,6 +19,7 @@ import { SignUpFormValues } from "../types";
 import { useRegister } from "../hooks/useRegister";
 import { useGetLocation } from "@/hooks/useGetLocation";
 import { signupSchema } from "../schemas";
+import { UserGender } from "@/lib/types/user";
 
 export default function SignUpPage() {
   const { register, isLoading } = useRegister();
@@ -195,9 +196,9 @@ export default function SignUpPage() {
                       className="w-full border rounded px-3 py-2"
                     >
                       <option value="">Chọn giới tính</option>
-                      <option value="MALE">Nam</option>
-                      <option value="FEMALE">Nữ</option>
-                      <option value="OTHER">Khác</option>
+                      <option value={UserGender.MALE}>Nam</option>
+                      <option value={UserGender.FEMALE}>Nữ</option>
+                      <option value={UserGender.OTHER}>Khác</option>
                     </select>
                   </FormControl>
                   <FormMessage className="text-red-500 text-sm" />

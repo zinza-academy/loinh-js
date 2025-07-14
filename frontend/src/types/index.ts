@@ -1,4 +1,5 @@
 import { UserRole } from "@/app/(auth)/account/types";
+import { UserGender } from "@/lib/types/user";
 
 export interface CommonResponse<T> {
   data: T;
@@ -61,7 +62,7 @@ export interface Ward {
 export interface User {
   id: number;
   identityNumber: string;
-  gender: string;
+  gender: UserGender;
   name: string;
   birthDate: null | Date;
   isActive: boolean;
