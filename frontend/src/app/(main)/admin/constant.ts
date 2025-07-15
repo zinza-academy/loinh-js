@@ -44,4 +44,28 @@ export const TOAST_MESSAGES = {
     duration: 3000,
     variant: "destructive" as const,
   },
+
+  // User Management Messages
+  CREATE_USER_SUCCESS: {
+    title: "User created successfully!",
+    description: "The new user has been added.",
+    duration: 2000,
+  },
+  CREATE_USER_ERROR: {
+    title: "Failed to create user!",
+    description: "Please check your details and try again.",
+    duration: 3000,
+    variant: "destructive" as const,
+  },
+  UPDATE_USER_SUCCESS: {
+    title: "User updated successfully!",
+    description: "The user has been updated.",
+    duration: 2000,
+  },
+  UPDATE_USER_ERROR: {
+    title: "Failed to update user!",
+    description: "Please check your details and try again.",
+    duration: 3000,
+    variant: "destructive" as const,
+  },
 } as const;

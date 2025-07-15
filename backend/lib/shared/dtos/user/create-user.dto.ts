@@ -8,8 +8,9 @@ import {
   Min,
   IsDateString,
   IsPhoneNumber,
+  IsEmail,
 } from 'class-validator';
-import { UserGender } from '@enum/user.enum';
+import { UserGender, UserRole } from '@enum/user.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -33,9 +34,21 @@ export class CreateUserDto {
 
   @IsDateString()
   @IsOptional()
-  birthDate: Date;
+  birthDate?: string;
 
   @IsOptional()
-  @IsPhoneNumber()
+  @IsString()
   phone?: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
 }

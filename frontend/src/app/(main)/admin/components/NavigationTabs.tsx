@@ -10,6 +10,7 @@ function NavigationTabs() {
     { name: "Điểm tiêm", path: "/admin/injection-points" },
     { name: "Đăng ký", path: "/admin/vaccine-registration" },
     { name: "Tài liệu", path: "/admin/documents" },
+    { name: "User", path: "/admin/users" },
   ];
 
   return (

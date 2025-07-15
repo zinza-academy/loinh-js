@@ -1,3 +1,5 @@
+import { UserGender } from "@/lib/types/user";
+
 export interface CreateInjectionPointParams {
   addressDetail: string;
   name: string;
@@ -55,7 +57,11 @@ export interface UpdateInjectionRegistrationResponse {
 }
 
 export interface CreateInjectionRegistrationParams {
-  
+  name: string;
+  identityNumber: string;
+  createdAt: string;
+  vaccineType: VaccineType;
+  status: VaccineStatus;
 }
 
 export interface CreateInjectionRegistrationResponse {
@@ -84,4 +90,95 @@ export enum VaccineStatus {
   APPROVED = "APPROVED",
   COMPLETED = "COMPLETED",
   REJECTED = "REJECTED",
+}
+
+// User Management Types
+export interface CreateUserParams {
+  name: string;
+  identityNumber: string;
+  gender: string;
+  wardId: number;
+  birthDate?: string;
+  phone?: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+export interface CreateUserResponse {
+  id: number;
+  name: string;
+  identityNumber: string;
+  gender: string;
+  wardId: number;
+  birthDate: string;
+  phone: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateUserParams {
+  name?: string;
+  identityNumber?: string;
+  gender?: string;
+  wardId?: number;
+  birthDate?: string;
+  phone?: string;
+  role?: string;
+  password?: string;
+}
+
+export interface UpdateUserResponse {
+  id: number;
+  name: string;
+  identityNumber: string;
+  gender: string;
+  wardId: number;
+  birthDate: string;
+  phone: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetAllUsersResponse {
+  data: User[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export interface User {
+  id: number;
+  identityNumber: string;
+  gender: UserGender;
+  name: string;
+  birthDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  wardId: number;
+  location: {
+    ward: {
+      id: number;
+      name: string;
+    };
+    district: {
+      id: number;
+      name: string;
+    };
+    province: {
+      id: number;
+      name: string;
+    };
+  };
+  identity: {
+    email: string;
+    role: string;
+  };
 }
