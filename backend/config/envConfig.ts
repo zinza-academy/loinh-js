@@ -14,7 +14,21 @@ const envSchema = z.object({
   JWT_RESET_PASSWORD_SECRET: z.string(),
   JWT_RESET_PASSWORD_EXPIRE: z.string(),
   RESET_CODE_EXPIRE: z.string(),
-  SALT_ROUNDS: z.string().default('10').transform(val => parseInt(val, 10)),
+  SALT_ROUNDS: z
+    .string()
+    .default('10')
+    .transform((val) => parseInt(val, 10)),
+  MINIO_ENDPOINT: z.string().default('localhost'),
+  MINIO_PORT: z
+    .string()
+    .default('9000')
+    .transform((val) => parseInt(val, 10)),
+  MINIO_USE_SSL: z
+    .string()
+    .default('false')
+    .transform((val) => val === 'true'),
+  MINIO_ACCESS_KEY: z.string().default('admin123'),
+  MINIO_SECRET_KEY: z.string().default('123456789'),
 });
 
 // type inference from Zod schema
@@ -38,11 +52,20 @@ interface JwtIF {
   JWT_RESET_PASSWORD_EXPIRE: string;
 }
 
+export interface MinIOIF {
+  endPoint: string;
+  port: number;
+  useSSL: boolean;
+  accessKey: string;
+  secretKey: string;
+}
+
 export interface AppConfiguration {
   frontendUrl: string;
   database: DatabaseIF;
   jwt: JwtIF;
   auth: AuthConfigIF;
+  minio: MinIOIF;
 }
 
 // validate environment variables
@@ -59,10 +82,17 @@ function validateEnv(): EnvConfig {
       JWT_RESET_PASSWORD_EXPIRE: envConfig?.JWT_RESET_PASSWORD_EXPIRE,
       RESET_CODE_EXPIRE: envConfig?.RESET_CODE_EXPIRE,
       SALT_ROUNDS: envConfig?.SALT_ROUNDS,
+      MINIO_ENDPOINT: envConfig?.MINIO_ENDPOINT,
+      MINIO_PORT: envConfig?.MINIO_PORT,
+      MINIO_USE_SSL: envConfig?.MINIO_USE_SSL, // Remove the manual boolean conversion
+      MINIO_ACCESS_KEY: envConfig?.MINIO_ACCESS_KEY,
+      MINIO_SECRET_KEY: envConfig?.MINIO_SECRET_KEY,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessage = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+      const errorMessage = error.errors
+        .map((err) => `${err.path.join('.')}: ${err.message}`)
+        .join(', ');
       throw new Error(`Environment validation failed: ${errorMessage}`);
     }
     throw error;
@@ -88,6 +118,13 @@ export const env: AppConfiguration = {
   auth: {
     RESET_CODE_EXPIRE: validatedEnv.RESET_CODE_EXPIRE,
     SALT_ROUNDS: validatedEnv.SALT_ROUNDS,
+  },
+  minio: {
+    endPoint: validatedEnv.MINIO_ENDPOINT,
+    port: validatedEnv.MINIO_PORT,
+    useSSL: validatedEnv.MINIO_USE_SSL,
+    accessKey: validatedEnv.MINIO_ACCESS_KEY,
+    secretKey: validatedEnv.MINIO_SECRET_KEY,
   },
 };
 

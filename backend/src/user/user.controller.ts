@@ -9,6 +9,9 @@ import {
   Query,
   ParseIntPipe,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from 'lib/shared/dtos/user/create-user.dto';
@@ -19,6 +22,9 @@ import { Roles } from 'lib/shared/decorators/roles.decorator';
 import { UserRole } from '@enum/user.enum';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { JwtDecodedPayload } from 'lib/shared/decorators/jwt-layload.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadService } from '@/upload/upload.service';
+import { UserPayloadJwt } from 'lib/shared/types/jwt-payload.type';
 
 @Controller('users')
 export class UserController {
@@ -32,8 +38,8 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.ADMIN)
   findAll(@Query() paginationQueryDto: PaginationQueryDto) {
     return this.userService.findAll(paginationQueryDto);
   }
@@ -59,5 +65,28 @@ export class UserController {
   @Roles(UserRole.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(+id);
+  }
+
+  @Post('upload-avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  async uploadAvatar(
+    @UploadedFile() avatar: Express.Multer.File,
+    @JwtDecodedPayload() user: UserPayloadJwt,
+  ) {
+    if (!avatar) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    try {
+      const fileUrl = await this.userService.uploadAvatar(avatar, user);
+      return {
+        success: true,
+        message: 'Avatar uploaded successfully',
+        url: fileUrl.url,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to upload avatar');
+    }
   }
 }

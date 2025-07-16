@@ -42,3 +42,9 @@ export interface UpdateUserResponse {
   avatarUrl: string | null;
   wardId: number;
 }
+
+export interface UploadUserAvatarResponse {
+  success: boolean;
+  message: string;
+  url: string;
+}

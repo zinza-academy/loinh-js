@@ -9,10 +9,12 @@ RUN npm install
 COPY prisma ./prisma
 COPY .env .env
 
-RUN npx prisma generate
+RUN npm run prisma:generate
 
 COPY . .
 
 EXPOSE 8080
 
-CMD npm run start:dev
+CMD npm run prisma:push && npm run start:dev
+
+# then in exec run: npm run console:location

@@ -22,8 +22,8 @@ import {
 import { useGetLocation } from "@/hooks/useGetLocation";
 import { District, LocationsResponse, Ward } from "@/types";
 import { useCreateUser } from "../hooks/useCreateUser";
-import { UserGender } from "@/lib/types/user";
 import { UserRole } from "@/app/(auth)/account/types";
+import { UserGender } from "@/lib/types/user";
 
 const formSchema = z.object({
   name: z.string().min(1, "Tên là bắt buộc"),
@@ -256,6 +256,7 @@ function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
                 <SelectContent>
                   <SelectItem value={UserGender.MALE}>Nam</SelectItem>
                   <SelectItem value={UserGender.FEMALE}>Nữ</SelectItem>
+                  <SelectItem value={UserGender.OTHER}>Nữ</SelectItem>
                 </SelectContent>
               </Select>
               {errors.gender && (
