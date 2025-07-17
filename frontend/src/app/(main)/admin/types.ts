@@ -161,7 +161,7 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   phone: string | null;
-  avatarUrl: string | null;
+  avatar: string | null;
   wardId: number;
   location: {
     ward: {

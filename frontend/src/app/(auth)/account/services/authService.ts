@@ -23,7 +23,7 @@ export async function onLoginApi(
   const userInfo: User = {
     id: response.data.data.user.id,
     name: response.data.data.user.name,
-    avatarUrl: response.data.data.user.avatarUrl,
+    avatar: response.data.data.user.avatar,
     role: response.data.data.user.role,
     birthDate: response.data.data.user.birthDate,
     isActive: response.data.data.user.isActive,

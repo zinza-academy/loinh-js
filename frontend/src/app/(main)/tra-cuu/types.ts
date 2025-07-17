@@ -39,7 +39,7 @@ export interface UpdateUserResponse {
   createdAt: Date;
   updatedAt: Date;
   phone: string | null;
-  avatarUrl: string | null;
+  avatar: string | null;
   wardId: number;
 }
 

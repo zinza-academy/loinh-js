@@ -24,10 +24,6 @@ export class CreateUserDto {
   @IsEnum(UserGender)
   gender: UserGender;
 
-  @IsOptional()
-  @IsUrl()
-  avatarUrl?: string;
-
   @IsInt()
   @Min(1)
   wardId: number;

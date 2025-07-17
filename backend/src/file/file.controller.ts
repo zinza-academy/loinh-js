@@ -1,31 +1,30 @@
-import { Controller, Get, Param, Res, StreamableFile } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  Controller,
+  Get,
+  Param,
+  Req,
+  Res,
+  StreamableFile,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
+import { BUCKET_NAME } from 'lib/shared/constants/bucket-name';
 import { S3Service } from 'lib/shared/modules/s3/s3.service';
 
 @Controller('files')
 export class FileController {
   constructor(private readonly s3Service: S3Service) {}
 
-  @Get(':bucket/:userId/:folder/:filename')
-  async getFile(
-    @Param('bucket') bucket: string,
-    @Param('userId') userId: string,
-    @Param('folder') folder: string,
-    @Param('filename') filename: string,
-    @Res() res: Response,
-  ) {
+  @Get('avatars/:fileName')
+  async getAvatar(@Param('fileName') fileName: string, @Res() res: Response) {
     try {
-      const key = `${userId}/${folder}/${filename}`;
-
       const presignedUrl = await this.s3Service.getPresignedUrl(
-        bucket,
-        key,
+        BUCKET_NAME.USER_AVATARS,
+        fileName,
         3600,
       );
       res.redirect(presignedUrl);
     } catch (error) {
-      console.error('Error getting file:', error);
-      res.status(404).json({ error: 'File not found' });
+      res.status(404).json({ error: 'Avatar not found' });
     }
   }
 }

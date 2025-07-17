@@ -214,7 +214,16 @@ const Header = () => {
                 >
                   <Avatar>
                     <AvatarImage
-                      src={user?.avatarUrl}
+                      src={
+                        user
+                          ? (process.env.NEXT_PUBLIC_API_URL ?? "") +
+                              user.avatar ||
+                            "/files/avatars/" +
+                              (userData && userData.data?.avatar
+                                ? userData?.data.avatar
+                                : "")
+                          : ""
+                      }
                       alt={user?.name || "User"}
                     />
                     <AvatarFallback className="bg-blue-500 text-white">
@@ -229,7 +238,7 @@ const Header = () => {
               >
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/account"
+                    href="/user"
                     className="w-full px-4 py-2 hover:bg-gray-100 focus:bg-gray-100"
                   >
                     Hồ sơ

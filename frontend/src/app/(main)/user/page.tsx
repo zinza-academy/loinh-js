@@ -49,21 +49,23 @@ export default function UserPage() {
         <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">
           Thông tin hồ sơ cá nhân
         </h1>
-
         <div className="flex flex-col md:flex-row items-center md:items-start md:space-x-10 space-y-6 md:space-y-0">
           {/* Avatar Section */}
           <div className="flex flex-col items-center">
-            <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-blue-500 shadow-md hover:scale-105 transition-transform">
+            <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-blue-500 shadow-md hover:scale-105 transition-transform bg-gray-600">
               <Image
                 src={
                   avatarPreview ||
-                  (process.env.NEXT_PUBLIC_API_URL ?? "") +
-                    (user?.avatarUrl ? userData?.data.avatarUrl : "") ||
-                  ""
+                  (user.avatar
+                    ? (process.env.NEXT_PUBLIC_API_URL ?? "") + user.avatar
+                    : userData?.data?.avatar
+                    ? (process.env.NEXT_PUBLIC_API_URL ?? "") +
+                      userData.data.avatar
+                    : "/image/Logo.png")
                 }
                 alt="Avatar"
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
 

@@ -17,7 +17,7 @@ export const useUploadUserAvatar = () => {
           if (user) {
             setUser({
               ...user,
-              avatarUrl: res.url,
+              avatar: res.url,
             });
           }
         },
