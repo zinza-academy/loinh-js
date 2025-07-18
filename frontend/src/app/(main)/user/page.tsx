@@ -60,6 +60,7 @@ export default function UserPage() {
                     ? (process.env.NEXT_PUBLIC_API_URL ?? "") + user.avatar
                     : userData?.data?.avatar
                     ? (process.env.NEXT_PUBLIC_API_URL ?? "") +
+                      "files/avatars/" +
                       userData.data.avatar
                     : "/image/Logo.png")
                 }

@@ -212,8 +212,9 @@ const Header = () => {
                   className="focus:outline-none focus:ring-2 focus:ring-white rounded-full"
                   aria-label="Menu người dùng"
                 >
-                  <Avatar>
+                  <Avatar className="border-white border-2">
                     <AvatarImage
+                      className="object-contain"
                       src={
                         user
                           ? (process.env.NEXT_PUBLIC_API_URL ?? "") +

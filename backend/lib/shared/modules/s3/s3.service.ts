@@ -13,10 +13,19 @@ import { env } from 'config/envConfig';
 @Injectable()
 export class S3Service {
   private readonly s3Client: S3Client;
-
+  private readonly s3Client2: S3Client;
   constructor() {
     this.s3Client = new S3Client({
       endpoint: env.minio.endPoint,
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: env.minio.accessKey,
+        secretAccessKey: env.minio.secretKey,
+      },
+      forcePathStyle: true,
+    });
+    this.s3Client2 = new S3Client({
+      endpoint: env.minio.minioExternalEndpoint,
       region: 'us-east-1',
       credentials: {
         accessKeyId: env.minio.accessKey,
@@ -74,7 +83,7 @@ export class S3Service {
       Key: key,
     });
 
-    return await getSignedUrl(this.s3Client, command, { expiresIn });
+    return await getSignedUrl(this.s3Client2, command, { expiresIn });
   }
 
   async deleteFile(bucket: string, key: string): Promise<void> {

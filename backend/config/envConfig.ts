@@ -19,6 +19,7 @@ const envSchema = z.object({
     .default('10')
     .transform((val) => parseInt(val, 10)),
   MINIO_ENDPOINT: z.string().default('localhost'),
+  MINIO_EXTERNAL_ENDPOINT: z.string().default('localhost'),
   MINIO_PORT: z
     .string()
     .default('9000')
@@ -54,6 +55,7 @@ interface JwtIF {
 
 export interface MinIOIF {
   endPoint: string;
+  minioExternalEndpoint: string;
   port: number;
   useSSL: boolean;
   accessKey: string;
@@ -83,6 +85,7 @@ function validateEnv(): EnvConfig {
       RESET_CODE_EXPIRE: envConfig?.RESET_CODE_EXPIRE,
       SALT_ROUNDS: envConfig?.SALT_ROUNDS,
       MINIO_ENDPOINT: envConfig?.MINIO_ENDPOINT,
+      MINIO_EXTERNAL_ENDPOINT: envConfig?.MINIO_EXTERNAL_ENDPOINT,
       MINIO_PORT: envConfig?.MINIO_PORT,
       MINIO_USE_SSL: envConfig?.MINIO_USE_SSL, // Remove the manual boolean conversion
       MINIO_ACCESS_KEY: envConfig?.MINIO_ACCESS_KEY,
@@ -121,6 +124,7 @@ export const env: AppConfiguration = {
   },
   minio: {
     endPoint: validatedEnv.MINIO_ENDPOINT,
+    minioExternalEndpoint: validatedEnv.MINIO_EXTERNAL_ENDPOINT,
     port: validatedEnv.MINIO_PORT,
     useSSL: validatedEnv.MINIO_USE_SSL,
     accessKey: validatedEnv.MINIO_ACCESS_KEY,
