@@ -1,17 +1,14 @@
 services:
-  # client:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: docker/prod.Dockerfile
-  #   env_file:
-  #     - path: .env
-  #       required: false
-  #   ports:
-  #     - "3000:3000"
+  client:
+    image: bossvirus03/zinza-vaccine-frontend:latest
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "3000:3000"
+
   server:
-    build:
-      context: ./backend
-      dockerfile: docker/prod.Dockerfile
+    image: bossvirus03/zinza-vaccine-backend:latest
     depends_on:
       - db
     env_file:
@@ -19,11 +16,11 @@ services:
         required: false
     ports:
       - "8080:8080"
+
   db:
     image: postgres:15
     env_file:
       - ./backend/.env
-
     ports:
       - "5432:5432"
     volumes:
@@ -40,6 +37,7 @@ services:
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+
 volumes:
   minio-data:
   postgres-data:
