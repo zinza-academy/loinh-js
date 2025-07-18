@@ -3,12 +3,15 @@ services:
     build:
       context: ./frontend
       dockerfile: docker/prod.Dockerfile
+    env_file:
+      - path: .env
+        required: true
     ports:
       - "3000:3000"
   server:
     build:
       context: ./backend
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/prod.Dockerfile
     depends_on:
       - db
     env_file:

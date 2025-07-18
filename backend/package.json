@@ -11,7 +11,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -21,7 +21,8 @@
     "prisma:generate": "prisma generate  --schema=./prisma/",
     "prisma:push": "prisma db push --schema=./prisma/",
     "console": "ts-node -r tsconfig-paths/register src/console.ts",
-    "console:location": "ts-node -r tsconfig-paths/register src/console.ts import-location-data"
+    "console:location": "ts-node -r tsconfig-paths/register src/console.ts import-location-data",
+    "console:location:prod": "node dist/src/console.js import-location-data"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.844.0",

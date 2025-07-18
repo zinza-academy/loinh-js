@@ -26,7 +26,7 @@ const RegistInjectPage = () => {
             <VaccinationConsentFormStep />
           )}
           {currentStep == StepNumber.Finish && (
-            <FinishStep registrationId={"8970230923847230"} />
+            <FinishStep />
           )}
         </div>
       </main>

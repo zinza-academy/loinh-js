@@ -28,5 +28,13 @@
         "lib/shared/dtos/*"
       ]
     }
-  }
+  },
+  "include": [
+    "src/**/*",
+    "lib/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
