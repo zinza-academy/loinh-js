@@ -70,7 +70,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   phone: null | string;
-  avatarUrl: null;
+  avatar: null | string;
   wardId: number;
   location: {
     ward: {

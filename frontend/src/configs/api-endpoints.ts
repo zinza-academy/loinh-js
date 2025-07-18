@@ -29,5 +29,6 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: string | number) => `/users/${id}`,
     UPDATE: (id: string | number) => `/users/${id}`,
     DELETE: (id: string | number) => `/users/${id}`,
+    UPLOAD_AVATAR: '/users/upload-avatar',
   },
 };

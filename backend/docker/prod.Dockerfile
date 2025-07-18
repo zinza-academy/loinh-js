@@ -23,4 +23,4 @@ RUN npx prisma generate
 
 EXPOSE 8080
 
-CMD ["npm", "run", "start:prod"]
+CMD npm run prisma:push && npm run console:location && npm run start:prod

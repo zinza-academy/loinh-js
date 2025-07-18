@@ -1,0 +1,11 @@
+model File {
+    key          String      @unique
+    name         String
+    originalname String   @map("original_name")
+    size         Int
+    mineType     String   @map("mime_type")
+    userId       Int?     @unique @map("user_id")
+    user         User?    @relation(fields: [userId], references: [id])
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
+}

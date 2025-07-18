@@ -39,6 +39,12 @@ export interface UpdateUserResponse {
   createdAt: Date;
   updatedAt: Date;
   phone: string | null;
-  avatarUrl: string | null;
+  avatar: string | null;
   wardId: number;
+}
+
+export interface UploadUserAvatarResponse {
+  success: boolean;
+  message: string;
+  url: string;
 }

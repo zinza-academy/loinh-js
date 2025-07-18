@@ -32,7 +32,7 @@ export enum UserRole {
 
 export interface User {
   id: number;
-  avatarUrl: string;
+  avatar: string;
   name: string;
   role: UserRole;
   birthDate: Date;

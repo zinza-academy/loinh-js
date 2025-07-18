@@ -11,10 +11,16 @@ import { CreateUserDto } from 'lib/shared/dtos/user/create-user.dto';
 import { UpdateUserDto } from 'lib/shared/dtos/user/update-user.dto';
 import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
 import { UserRole } from '@enum/user.enum';
-
+import { UploadService } from '@/upload/upload.service';
+import { S3Service } from 'lib/shared/modules/s3/s3.service';
+import { v4 as uuid } from 'uuid';
+import { BUCKET_NAME } from 'lib/shared/constants/bucket-name';
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private s3Service: S3Service,
+  ) {}
   private readonly saltRounds = env.auth.SALT_ROUNDS;
 
   async create(createUserDto: CreateUserDto) {
@@ -45,7 +51,6 @@ export class UserService {
           name: userData.name,
           identityNumber: userData.identityNumber,
           gender: userData.gender,
-          avatarUrl: userData.avatarUrl,
           wardId: userData.wardId,
           birthDate:
             userData.birthDate && userData.birthDate.trim() !== ''
@@ -151,6 +156,7 @@ export class UserService {
       result = await this.prisma.user.findUnique({
         where: { id },
         include: {
+          avatar: true,
           ward: {
             include: {
               district: {
@@ -162,6 +168,9 @@ export class UserService {
           },
         },
       });
+      if (!result) {
+        throw new NotFoundException('User not found');
+      }
     } else {
       if (user.sub !== id) {
         throw new ForbiddenException('You are not allowed to get this user');
@@ -169,6 +178,7 @@ export class UserService {
       result = await this.prisma.user.findUnique({
         where: { id: user.sub },
         include: {
+          avatar: true,
           ward: {
             include: {
               district: {
@@ -182,9 +192,9 @@ export class UserService {
       });
     }
     const { ward, ...rest } = result;
-
     const formattedResult = {
       ...rest,
+      avatar: result.avatar ? result.avatar.key : null,
       role: identity?.role,
       location: {
         ward: { name: ward?.name || '', id: ward?.id || null },
@@ -260,7 +270,6 @@ export class UserService {
     };
 
     if (identity?.role === 'ADMIN') {
-      // Handle password and role updates for admin
       if (password || role) {
         const identityUpdateData: any = {};
         if (password) {
@@ -280,7 +289,6 @@ export class UserService {
         data: processedUserData,
       });
     } else {
-      // Regular user can only update their own profile
       if (user.sub !== id) {
         throw new ForbiddenException('You can only update your own profile');
       }
@@ -296,5 +304,80 @@ export class UserService {
     return this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  async uploadAvatar(file: Express.Multer.File, user) {
+    if (!file) {
+      throw new Error('No file uploaded');
+    }
+
+    if (!user || !user.sub) {
+      throw new ForbiddenException('You must be logged in to upload an avatar');
+    }
+
+    // Check if user exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id: user.sub },
+      include: { avatar: true },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const key = uuid();
+    const bucket = BUCKET_NAME.USER_AVATARS;
+
+    try {
+      // Upload file to MinIO
+      await this.s3Service.uploadFile(bucket, key, file.buffer, file.mimetype);
+
+      // Delete old avatar from MinIO if exists
+      if (existingUser.avatar?.key) {
+        await this.s3Service.deleteFile(bucket, existingUser.avatar.key);
+      }
+
+      // Update or create file metadata in database
+      const fileData = {
+        key,
+        mineType: file.mimetype,
+        name: key,
+        originalname: file.originalname,
+        size: file.size,
+        userId: user.sub,
+      };
+
+      let fileRecord;
+      if (existingUser.avatar) {
+        // Update existing file record
+        fileRecord = await this.prisma.file.update({
+          where: { userId: user.sub },
+          data: fileData,
+        });
+      } else {
+        // Create new file record
+        fileRecord = await this.prisma.file.create({
+          data: fileData,
+        });
+      }
+
+      // Create API URL that matches the FileController route
+      const apiUrl = `/files/avatars/${key}`;
+
+      // Update user's avatar reference
+      await this.prisma.user.update({
+        where: { id: user.sub },
+        data: {
+          avatar: {
+            connect: { key },
+          },
+        },
+      });
+
+      return { url: apiUrl };
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      throw new BadRequestException('Failed to upload avatar');
+    }
   }
 }

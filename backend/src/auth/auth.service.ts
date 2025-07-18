@@ -57,7 +57,11 @@ export class AuthService {
       where: { id: user.userId },
       select: {
         id: true,
-        avatarUrl: true,
+        avatar: {
+          select: {
+            key: true,
+          },
+        },
         name: true,
         birthDate: true,
         isActive: true,
@@ -80,7 +84,11 @@ export class AuthService {
       path: '/',
     });
     return {
-      user: { ...userData, role: identity?.role },
+      user: {
+        ...userData,
+        avatar: userData?.avatar?.key,
+        role: identity?.role,
+      },
       access_token,
       refresh_token,
     };
