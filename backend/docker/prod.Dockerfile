@@ -22,7 +22,6 @@ COPY package*.json ./
 RUN npm i --omit=dev
 
 COPY prisma ./prisma
-COPY ../.env .env
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
