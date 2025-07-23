@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { API_ENDPOINTS } from "./api-endpoints";
 import { useAuthStore } from "@/stores/authStore";
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 1000,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,

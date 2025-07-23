@@ -25,7 +25,6 @@ COPY prisma ./prisma
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/.env .env
 
 RUN cp ./dist/data/location/location-data.xlsx ./dist/lib/data/location/location-data.xlsx
 
