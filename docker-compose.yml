@@ -2,7 +2,7 @@ services:
   client:
     image: bossvirus03/zinza-vaccine-frontend:latest
     env_file:
-      - path: .env
+      - path: ./frontend/.env
         required: false
     ports:
       - "3000:3000"
@@ -12,7 +12,7 @@ services:
     depends_on:
       - db
     env_file:
-      - path: .env
+      - path: ./backend/.env
         required: false
     ports:
       - "8080:8080"
