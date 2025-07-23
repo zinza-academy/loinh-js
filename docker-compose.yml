@@ -3,17 +3,25 @@ services:
     image: bossvirus03/zinza-vaccine-frontend:latest
     env_file:
       - path: ./frontend/.env
-        required: false
+        required: true
     ports:
       - "3000:3000"
 
   server:
-    image: bossvirus03/zinza-vaccine-backend:latest
+    build:
+      context: ./backend
+      dockerfile: docker/prod.Dockerfile
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/lib:/app/lib
+      - ./backend/prisma:/app/prisma
+      - ./backend/config:/app/config
+      - /app/node_modules
     depends_on:
       - db
     env_file:
       - path: ./backend/.env
-        required: false
+        required: true
     ports:
       - "8080:8080"
 
