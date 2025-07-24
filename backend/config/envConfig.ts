@@ -18,6 +18,8 @@ const envSchema = z.object({
     .string()
     .default('10')
     .transform((val) => parseInt(val, 10)),
+  ADMIN_EMAIL: z.string().optional(),
+  ADMIN_PASSWORD: z.string().optional(),
   MINIO_ENDPOINT: z.string().default('localhost'),
   MINIO_EXTERNAL_ENDPOINT: z.string().default('localhost'),
   MINIO_PORT: z
@@ -42,6 +44,8 @@ interface DatabaseIF {
 interface AuthConfigIF {
   RESET_CODE_EXPIRE: string;
   SALT_ROUNDS: number;
+  ADMIN_EMAIL?: string;
+  ADMIN_PASSWORD?: string;
 }
 
 interface JwtIF {
@@ -84,6 +88,8 @@ function validateEnv(): EnvConfig {
       JWT_RESET_PASSWORD_EXPIRE: envConfig?.JWT_RESET_PASSWORD_EXPIRE,
       RESET_CODE_EXPIRE: envConfig?.RESET_CODE_EXPIRE,
       SALT_ROUNDS: envConfig?.SALT_ROUNDS,
+      ADMIN_EMAIL: envConfig?.ADMIN_EMAIL,
+      ADMIN_PASSWORD: envConfig?.ADMIN_PASSWORD,
       MINIO_ENDPOINT: envConfig?.MINIO_ENDPOINT,
       MINIO_EXTERNAL_ENDPOINT: envConfig?.MINIO_EXTERNAL_ENDPOINT,
       MINIO_PORT: envConfig?.MINIO_PORT,
@@ -121,6 +127,8 @@ export const env: AppConfiguration = {
   auth: {
     RESET_CODE_EXPIRE: validatedEnv.RESET_CODE_EXPIRE,
     SALT_ROUNDS: validatedEnv.SALT_ROUNDS,
+    ADMIN_EMAIL: validatedEnv.ADMIN_EMAIL,
+    ADMIN_PASSWORD: validatedEnv.ADMIN_PASSWORD,
   },
   minio: {
     endPoint: validatedEnv.MINIO_ENDPOINT,
