@@ -10,7 +10,7 @@ import { env } from 'config/envConfig';
 import { CreateUserDto } from 'lib/shared/dtos/user/create-user.dto';
 import { UpdateUserDto } from 'lib/shared/dtos/user/update-user.dto';
 import { PrismaService } from 'lib/shared/modules/prisma/prisma.service';
-import { UserRole } from '@enum/user.enum';
+import { UserGender, UserRole } from '@enum/user.enum';
 import { UploadService } from '@/upload/upload.service';
 import { S3Service } from 'lib/shared/modules/s3/s3.service';
 import { v4 as uuid } from 'uuid';
@@ -23,6 +23,56 @@ export class UserService {
   ) {}
   private readonly saltRounds = env.auth.SALT_ROUNDS;
 
+  async onModuleInit() {
+    await this.createAdminIfNotExists();
+  }
+
+  async createAdminIfNotExists() {
+    const defaultAdminEmail = env.auth.ADMIN_EMAIL;
+    const defaultAdminPassword = env.auth.ADMIN_PASSWORD;
+    if (defaultAdminEmail && defaultAdminPassword) {
+      const existingAdmin = await this.findUserByEmail(defaultAdminEmail);
+
+      if (existingAdmin) {
+        console.log('👤 Admin already exists');
+        return;
+      }
+
+      const adminData: CreateUserDto = {
+        email: defaultAdminEmail,
+        name: 'Super Admin',
+        role: UserRole.ADMIN,
+        identityNumber: '123123123123',
+        gender: UserGender.MALE,
+        wardId: 1,
+        password: defaultAdminPassword,
+      };
+      try {
+        await this.create(adminData);
+        // Create admin identity with hashed password
+        const hashedPassword =
+          await this.getHashedPassword(defaultAdminPassword);
+        await this.prisma.identity.create({
+          data: {
+            email: defaultAdminEmail,
+            password: hashedPassword,
+            role: UserRole.ADMIN,
+            user: {
+              create: {
+                name: adminData.name,
+                identityNumber: adminData.identityNumber,
+                gender: adminData.gender,
+                wardId: adminData.wardId,
+              },
+            },
+          },
+        });
+        console.log('✅ Admin user created');
+      } catch (error) {
+        console.error('❌ Failed to create admin user:', error);
+      }
+    }
+  }
   async create(createUserDto: CreateUserDto) {
     const { email, password, role = 'USER', ...userData } = createUserDto;
 

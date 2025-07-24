@@ -1,39 +1,37 @@
 services:
-  # client:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: docker/Dockerfile
-  #   volumes:
-  #     - ./frontend/src:/app/src
-  #     - ./frontend/public:/app/public
-  #     - /app/node_modules
-  #   restart: always
-  #   ports:
-  #     - "3000:3000"
+  client:
+    build:
+      context: ./frontend
+      dockerfile: docker/prod.Dockerfile
+    image: bossvirus03/zinza-vaccine-frontend:latest
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "3000:3000"
+
   server:
     build:
       context: ./backend
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/prod.Dockerfile
+    image: bossvirus03/zinza-vaccine-backend:latest
+    env_file:
+      - ./backend/.env
     volumes:
-      - ./backend/src:/app/src
-      - ./backend/lib:/app/lib
       - ./backend/prisma:/app/prisma
-      - ./backend/config:/app/config
-      - /app/node_modules
-    restart: always
     depends_on:
       - db
     ports:
       - "8080:8080"
+
   db:
     image: postgres:15
     env_file:
       - ./backend/.env
-
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -42,12 +40,10 @@ services:
       - "9001:9001"
     env_file:
       - ./backend/.env
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+
 volumes:
   minio-data:
   postgres-data:

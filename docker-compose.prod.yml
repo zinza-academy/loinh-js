@@ -1,14 +1,13 @@
 services:
   client:
-    build:
-      context: ./frontend
-      dockerfile: docker/prod.Dockerfile
+    image: bossvirus03/zinza-vaccine-frontend:latest
+    env_file:
+      - path: .env
+        required: true
     ports:
       - "3000:3000"
   server:
-    build:
-      context: ./backend
-      dockerfile: docker/Dockerfile
+    image: bossvirus03/zinza-vaccine-backend:latest
     depends_on:
       - db
     env_file:
@@ -18,24 +17,22 @@ services:
       - "8080:8080"
   db:
     image: postgres:15
-    environment:
-      PGTZ: Asia/Ho_Chi_Minh
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1
-      POSTGRES_DB: zinza-vaccine
+    env_file:
+      - ./backend/.env
+
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
   minio:
     image: minio/minio:latest
     container_name: minio
     ports:
       - "9000:9000"
       - "9001:9001"
-    environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=123
+    env_file:
+      - ./backend/.env
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"

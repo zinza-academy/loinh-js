@@ -1,6 +1,6 @@
 
 export const API_ENDPOINTS = {
-  API_BASE_URL: "http://localhost:8080",
+  API_BASE_URL: process.env.NEXT_PUBLIC_API_URL,
   LOCATIONS: "/location",
   AUTH: {
     LOGIN: "/auth/login",

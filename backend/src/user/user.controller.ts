@@ -38,8 +38,8 @@ export class UserController {
   }
 
   @Get()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   findAll(@Query() paginationQueryDto: PaginationQueryDto) {
     return this.userService.findAll(paginationQueryDto);
   }

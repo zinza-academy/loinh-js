@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { API_ENDPOINTS } from "./api-endpoints";
 import { useAuthStore } from "@/stores/authStore";
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 1000,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
@@ -34,11 +34,9 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await api.post(
-          `${API_ENDPOINTS.API_BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        await api.get(`${API_ENDPOINTS.API_BASE_URL}/auth/refresh`, {
+          withCredentials: true,
+        });
         return api(originalRequest);
       } catch (refreshError) {
         useAuthStore.getState().clearUser();
