@@ -34,11 +34,9 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await api.post(
-          `${API_ENDPOINTS.API_BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        await api.get(`${API_ENDPOINTS.API_BASE_URL}/auth/refresh`, {
+          withCredentials: true,
+        });
         return api(originalRequest);
       } catch (refreshError) {
         useAuthStore.getState().clearUser();
