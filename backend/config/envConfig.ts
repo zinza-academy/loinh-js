@@ -1,7 +1,12 @@
 import * as dotenv from 'dotenv';
 import { z } from 'zod';
 
-const envConfig = dotenv.config().parsed!;
+// Load dotenv but also use process.env as fallback
+dotenv.config();
+const envConfig = {
+  ...process.env,
+  ...(dotenv.config().parsed || {}),
+};
 
 // zod schema for environment validation
 const envSchema = z.object({
