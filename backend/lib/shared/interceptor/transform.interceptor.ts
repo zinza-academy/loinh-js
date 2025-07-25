@@ -19,6 +19,13 @@ export class TransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<Response<T>> {
+    const request = context.switchToHttp().getRequest();
+    
+    // Skip transformation for metrics endpoint to return raw Prometheus format
+    if (request.url === '/metrics') {
+      return next.handle();
+    }
+    
     return next.handle().pipe(map((data) => ({ data })));
   }
 }

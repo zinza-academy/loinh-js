@@ -21,6 +21,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtDecodedPayload } from 'lib/shared/decorators/jwt-layload.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { VerifyResetPasswordCodeDto } from 'lib/shared/types/jwt-payload.type';
+import { TrackMetrics } from '../decorators/track-metrics.decorator';
+import { TrackApiMetrics } from '../decorators/track-api-metrics.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +30,13 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @TrackMetrics({ operation: 'login_user' })
+  @TrackApiMetrics({ 
+    endpoint: 'auth_login', 
+    trackResponseTime: true, 
+    trackCalls: true,
+    trackByUserRole: false 
+  })
   async login(
     @Body() loginUserDto: LoginUserDto,
     @JwtDecodedPayload() user,
@@ -38,11 +47,19 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
+  @TrackMetrics({ operation: 'logout_user' })
+  @TrackApiMetrics({ 
+    endpoint: 'auth_logout', 
+    trackResponseTime: true, 
+    trackCalls: true,
+    trackByUserRole: true 
+  })
   async logout(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
     return this.authService.logout(req, res);
   }
 
   @Post('register')
+  @TrackMetrics({ operation: 'register_user' })
   async register(@Body() registerUserDto: RegisterUserDto) {
     return this.authService.register(registerUserDto);
   }
