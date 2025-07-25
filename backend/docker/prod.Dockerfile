@@ -25,6 +25,7 @@ RUN npm i --omit=dev
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/.env.prod .env
 
 RUN cp ./dist/data/location/location-data.xlsx ./dist/lib/data/location/location-data.xlsx
 
