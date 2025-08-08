@@ -9,8 +9,10 @@ import {
 } from "@/components/ui/table";
 import { vaccinationData } from "@/lib/constants/vaccinationData";
 import { Heart, User, Calendar, IdCard, QrCode } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const CertificateTab = () => {
+  const router = useRouter();
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Left side - Certificate Details */}
@@ -91,7 +93,10 @@ const CertificateTab = () => {
         </Table>
 
         <div className="text-center pt-4">
-          <Button className="bg-[#303F9F] hover:bg-[#303F9F]/80">
+          <Button
+            className="bg-[#303F9F] hover:bg-[#303F9F]/80"
+            onClick={() => router.push("/dang-ky-tiem")}
+          >
             ĐĂNG KÝ MŨI TIÊM TIẾP THEO
           </Button>
         </div>
