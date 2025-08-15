@@ -4,6 +4,7 @@ import { validateEnvConfig } from 'config/envConfig';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { TransformInterceptor } from 'lib/shared/interceptor/transform.interceptor';
+import { MetricsInterceptor } from './interceptors/metrics.interceptor';
 
 async function bootstrap() {
   validateEnvConfig();
@@ -15,6 +16,10 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalInterceptors(new TransformInterceptor());
+  
+  // Get MetricsInterceptor from app context
+  const metricsInterceptor = app.get(MetricsInterceptor);
+  app.useGlobalInterceptors(metricsInterceptor);
 
   await app.listen(process.env.PORT ?? 3000, () => {
     console.log(

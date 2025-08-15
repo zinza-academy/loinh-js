@@ -25,6 +25,8 @@ import { JwtDecodedPayload } from 'lib/shared/decorators/jwt-layload.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '@/upload/upload.service';
 import { UserPayloadJwt } from 'lib/shared/types/jwt-payload.type';
+import { TrackMetrics } from '../decorators/track-metrics.decorator';
+import { TrackApiMetrics } from '../decorators/track-api-metrics.decorator';
 
 @Controller('users')
 export class UserController {
@@ -33,6 +35,7 @@ export class UserController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @TrackMetrics({ operation: 'create_user' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -40,18 +43,39 @@ export class UserController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @TrackMetrics({ operation: 'list_users', searchType: 'pagination', trackDuration: true })
+  @TrackApiMetrics({ 
+    endpoint: 'users_list', 
+    trackResponseTime: true, 
+    trackCalls: true,
+    trackByUserRole: true 
+  })
   findAll(@Query() paginationQueryDto: PaginationQueryDto) {
     return this.userService.findAll(paginationQueryDto);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
+  @TrackMetrics({ operation: 'get_user', searchType: 'by_id', trackDuration: true })
+  @TrackApiMetrics({ 
+    endpoint: 'users_get_by_id', 
+    trackResponseTime: true, 
+    trackCalls: true,
+    trackByUserRole: true 
+  })
   findOne(@Param('id', ParseIntPipe) id: number, @JwtDecodedPayload() user) {
     return this.userService.findOne(+id, user);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
+  @TrackMetrics({ operation: 'update_user' })
+  @TrackApiMetrics({ 
+    endpoint: 'users_update', 
+    trackResponseTime: true, 
+    trackCalls: true,
+    trackByUserRole: true 
+  })
   update(
     @Param('id', ParseIntPipe) id: number,
     @JwtDecodedPayload() user,
